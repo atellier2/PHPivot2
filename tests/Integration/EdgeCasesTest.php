@@ -197,6 +197,7 @@ class EdgeCasesTest extends TestCase
         
         $this->assertArrayHasKey('John', $table);
         $this->assertArrayHasKey('Jane', $table);
+        $this->assertEquals(0,$table['John']['amount']['_val']);
     }
     
     /**

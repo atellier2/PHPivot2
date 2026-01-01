@@ -199,17 +199,6 @@ class PHPivot
         return $this;
     }
 
-
-    public function setValueFunctions($functions = PivotConstants::PIVOT_VALUE_SUM)
-    {
-        //@todo: redo with new stuff
-        if (!is_array($functions)) {
-            $functions = array($functions);
-        }
-        $this->_values_functions = $functions;
-        return $this;
-    }
-
     /**
      * define how to display the values
      * 
@@ -535,7 +524,8 @@ class PHPivot
         $table = array();
 
         if (empty($this->_recordset)) {
-            return $table;
+            $this->_table = $table;
+            return $this;
         }
         if (!$this->_source_is_2DTable) {
             //Calculate all CALCULATED COLUMNS
@@ -1053,9 +1043,9 @@ class PHPivot
 
     protected function getDataValue($row)
     {
-        if (is_array($row) && (isset($row['_val']) || $row['_val'] === '')) return $row['_val'];
-        // Don't expose potentially sensitive data structure details in exception
-        throw new \RuntimeException('PHPivot: Cannot find ["_val"] in data row (invalid data structure)');
+        if (is_array($row) && (array_key_exists('_val', $row))) return $row['_val']??0;
+        
+        throw new PHPivotException('PHPivot: Cannot find ["_val"] in data row (invalid data structure)', PHPivotException::INVALID_CONFIGURATION);
     }
 
     //Figures out where the actual value is and produces html code
