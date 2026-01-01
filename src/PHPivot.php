@@ -114,6 +114,20 @@ class PHPivot
 
     protected $_source_is_2DTable = false;
 
+    /**
+     * Escape HTML special characters to prevent XSS
+     * 
+     * @param mixed $value The value to escape
+     * @return string The escaped value
+     */
+    private function escapeHtml($value)
+    {
+        if (is_null($value)) {
+            return '';
+        }
+        return htmlspecialchars((string)$value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    }
+
     public static function create($recordset)
     {
         return new self($recordset);
@@ -174,8 +188,17 @@ class PHPivot
         return $pivot;
     }
 
+    /**
+     * Constructor
+     * 
+     * @param array $recordset The data recordset
+     * @throws \InvalidArgumentException if recordset is not an array
+     */
     public function __construct($recordset)
     {
+        if (!is_array($recordset)) {
+            throw new \InvalidArgumentException('Recordset must be an array.');
+        }
         $this->_recordset = $recordset;
     }
 
@@ -208,14 +231,15 @@ class PHPivot
         return $this->_columns_titles;
     }
 
-    private function _notice($msg)
-    {
-        echo '<h4>NOTICE: ' . $msg . '</h4>';
-    }
-
+    /**
+     * Throw a PHPivot exception
+     * 
+     * @param string $msg The error message
+     * @throws \RuntimeException
+     */
     private function _error($msg)
     {
-        die('<h4>ERROR: ' . $msg . '</h4>');
+        throw new \RuntimeException('PHPivot ERROR: ' . $msg);
     }
 
     /**
@@ -317,12 +341,49 @@ class PHPivot
         return $this;
     }
 
-    //setting FROM->TO colors (for color-coding)
+    /**
+     * Set the decimal precision for rounding values
+     * 
+     * @param int $precision The number of decimal places (must be >= 0)
+     * @return $this
+     * @throws \InvalidArgumentException if precision is negative
+     */
+    public function setDecimalPrecision($precision)
+    {
+        if (!is_int($precision) || $precision < 0) {
+            throw new \InvalidArgumentException('Decimal precision must be a non-negative integer.');
+        }
+        $this->_decimal_precision = $precision;
+        return $this;
+    }
+
+    /**
+     * Set color range for color-coding values
+     * 
+     * @param string $low Low value color (hex format #RRGGBB)
+     * @param string $high High value color (hex format #RRGGBB)
+     * @param int|null $colorBy How to apply colors (COLOR_ALL, COLOR_BY_ROW, COLOR_BY_COL)
+     * @return $this
+     * @throws \InvalidArgumentException if color format is invalid
+     */
     public function setColorRange($low = '#00af5d', $high = '#ff0017', $colorBy = null)
     {
+        // Validate hex color format
+        if (!preg_match('/^#[0-9A-Fa-f]{6}$/', $low)) {
+            throw new \InvalidArgumentException('Low color must be in hex format #RRGGBB');
+        }
+        if (!preg_match('/^#[0-9A-Fa-f]{6}$/', $high)) {
+            throw new \InvalidArgumentException('High color must be in hex format #RRGGBB');
+        }
+        
         if (is_null($colorBy)) {
             $colorBy = PHPivot::COLOR_ALL;
         }
+        
+        if (!in_array($colorBy, [self::COLOR_ALL, self::COLOR_BY_ROW, self::COLOR_BY_COL])) {
+            throw new \InvalidArgumentException('Invalid colorBy parameter.');
+        }
+        
         $this->_color_by = $colorBy;
         $this->_color_low = $low;
         $this->_color_high = $high;
@@ -372,17 +433,61 @@ class PHPivot
         return $countNonBlank;
     }
 
+    /**
+     * Validate a single sort value
+     * 
+     * @param mixed $sort The sort value to validate
+     * @return bool True if valid
+     */
+    private function isValidSortValue($sort)
+    {
+        return is_callable($sort) || in_array($sort, [self::SORT_ASC, self::SORT_DESC]);
+    }
+
+    /**
+     * Validate sort parameter
+     * 
+     * @param int|array|callable $sortby The sort parameter to validate
+     * @throws \InvalidArgumentException if sort parameter is invalid
+     */
+    private function validateSortParameter($sortby)
+    {
+        if (is_array($sortby)) {
+            foreach ($sortby as $sort) {
+                if (!$this->isValidSortValue($sort)) {
+                    throw new \InvalidArgumentException('Invalid sort value in array.');
+                }
+            }
+        } else if (!$this->isValidSortValue($sortby)) {
+            throw new \InvalidArgumentException('Sort parameter must be SORT_ASC, SORT_DESC, or a callable.');
+        }
+    }
+
+    /**
+     * Set the sorting order for columns
+     * 
+     * @param int|array|callable $sortby Sort order (SORT_ASC, SORT_DESC) or array of sort orders or callable
+     * @return $this
+     * @throws \InvalidArgumentException if sort parameter is invalid
+     */
     public function setSortColumns($sortby)
     {
+        $this->validateSortParameter($sortby);
         $this->_columns_sort = $sortby;
-
         return $this;
     }
 
+    /**
+     * Set the sorting order for rows
+     * 
+     * @param int|array|callable $sortby Sort order (SORT_ASC, SORT_DESC) or array of sort orders or callable
+     * @return $this
+     * @throws \InvalidArgumentException if sort parameter is invalid
+     */
     public function setSortRows($sortby)
     {
+        $this->validateSortParameter($sortby);
         $this->_rows_sort = $sortby;
-
         return $this;
     }
 
@@ -404,13 +509,15 @@ class PHPivot
             $calc_function = array($calc_function);
             $extra_params = array_fill(0, 1, $extra_params);
         } else if (count($col_name) != count($calc_function)) {
-            die('addCalculatedColumns: column name and function count mismatch.');
+            throw new \InvalidArgumentException('addCalculatedColumns: column name and function count mismatch.');
         }
         for ($i = 0; $i < count($col_name); $i++) {
             $calc_col = array();
             $calc_col['name'] = $col_name[$i];
 
-            if (!function_exists($calc_function[$i])) die('Calculated Column function ' . $calc_function[$i] . ' is not defined.');
+            if (!is_callable($calc_function[$i])) {
+                throw new \InvalidArgumentException('Calculated Column function ' . $calc_function[$i] . ' is not callable.');
+            }
 
             $calc_col['function'] = $calc_function[$i];
             $calc_col['extra_params'] = $extra_params[$i];
@@ -419,8 +526,30 @@ class PHPivot
         return $this;
     }
 
+    /**
+     * Add a filter to the pivot table
+     * 
+     * @param string $column The column to filter on
+     * @param mixed $value The value(s) to filter for
+     * @param int $compare Comparison operator (COMPARE_EQUAL or COMPARE_NOT_EQUAL)
+     * @param int $match Match mode (FILTER_MATCH_ALL, FILTER_MATCH_ANY, or FILTER_MATCH_NONE)
+     * @return $this
+     * @throws \InvalidArgumentException if parameters are invalid
+     */
     public function addFilter($column, $value, $compare = PHPivot::COMPARE_EQUAL, $match = PHPivot::FILTER_MATCH_ALL)
     {
+        if (empty($column) || !is_string($column)) {
+            throw new \InvalidArgumentException('Filter column must be a non-empty string.');
+        }
+        
+        if (!in_array($compare, [self::COMPARE_EQUAL, self::COMPARE_NOT_EQUAL])) {
+            throw new \InvalidArgumentException('Invalid compare operator.');
+        }
+        
+        if (!in_array($match, [self::FILTER_MATCH_ALL, self::FILTER_MATCH_ANY, self::FILTER_MATCH_NONE])) {
+            throw new \InvalidArgumentException('Invalid match mode.');
+        }
+        
         $filter = array();
         $filter['type'] = PHPivot::FILTER_PHPIVOT;
         $filter['column'] = $column;
@@ -432,8 +561,24 @@ class PHPivot
         return $this;
     }
 
+    /**
+     * Add a custom filter function
+     * 
+     * The filter function should be defined as:
+     * function user_defined_filter_function($recordset, $rowID, $extra_params = null)
+     * and should return true whenever a row should be INCLUDED.
+     * 
+     * @param callable $filterFn The filter function
+     * @param mixed $extra_params Extra parameters to pass to the function (optional)
+     * @return $this
+     * @throws \InvalidArgumentException if the function is not callable
+     */
     public function addCustomFilter($filterFn, $extra_params = null)
     {
+        if (!is_callable($filterFn)) {
+            throw new \InvalidArgumentException('Filter function must be callable.');
+        }
+        
         $filter = array();
         $filter['type'] = PHPivot::FILTER_USER_DEFINED;
         $filter['function'] = $filterFn;
@@ -443,12 +588,34 @@ class PHPivot
         return $this;
     }
 
+    /**
+     * Compare a source value with a pattern
+     * 
+     * Note: This method uses fnmatch for pattern matching. When using with untrusted
+     * user input, be cautious of:
+     * - Very long patterns (can cause performance issues)
+     * - Excessive wildcards like '***...***' (can cause backtracking)
+     * - Path traversal patterns like '../' (though fnmatch doesn't traverse filesystem)
+     * 
+     * For production use with untrusted input, consider:
+     * - Limiting pattern length (e.g., max 100 characters)
+     * - Restricting allowed wildcard characters
+     * - Using simple string comparison instead of patterns
+     * 
+     * @param mixed $source The source value to compare
+     * @param mixed $pattern The pattern to match against
+     * @return int 0 if match, -2 if no match
+     */
     private function filter_compare($source, $pattern)
     {
+        // Numeric comparison
         if (is_numeric($source) && is_numeric($pattern)) {
             return ($source == $pattern ? 0 : -2);
         }
-        return (fnmatch($pattern, $source) ? 0 : -2);
+        
+        // For string comparison, use fnmatch for pattern matching
+        // Note: fnmatch uses filesystem-style wildcards (*, ?, [])
+        return (fnmatch((string)$pattern, (string)$source) ? 0 : -2);
     }
 
     //pass data through filters and see if it's a match
@@ -473,7 +640,7 @@ class PHPivot
                                     if (!$filterResult) return $filterResult;
                                     break;
                                 default:
-                                    die('ERROR: PHPivot: Compare function ' . $this->_filters[$i]['compare'] . ' not defined.');
+                                    throw new \RuntimeException('PHPivot: Compare function ' . $this->_filters[$i]['compare'] . ' not defined.');
                                     break;
                             }
                         }
@@ -492,11 +659,13 @@ class PHPivot
                                 if (!$filterResult) return $filterResult;
                                 break;
                             default:
-                                die('ERROR: PHPivot: FILTER_MATCH function ' . $this->_filters[$i]['match'] . ' not defined.');
+                                throw new \RuntimeException('PHPivot: FILTER_MATCH function ' . $this->_filters[$i]['match'] . ' not defined.');
                                 break;
                         }
                     } else {
-                        if (!isset($rs_row[$this->_filters[$i]['column']])) die('ERROR: PHPivot: Filter: No such column ' . $this->_filters[$i]['column']);
+                        if (!isset($rs_row[$this->_filters[$i]['column']])) {
+                            throw new \RuntimeException('PHPivot: Filter: No such column ' . $this->_filters[$i]['column']);
+                        }
                         switch ($this->_filters[$i]['compare']) {
                             case PHPivot::COMPARE_EQUAL:
                                 $filterResult = $filterResult && ($this->filter_compare($rs_row[$this->_filters[$i]['column']],  $this->_filters[$i]['value']) == 0 ? true : false);
@@ -507,7 +676,7 @@ class PHPivot
                                 if (!$filterResult) return $filterResult;
                                 break;
                             default:
-                                die('ERROR: PHPivot: Compare function ' . $this->_filters[$i]['compare'] . ' not defined.');
+                                throw new \RuntimeException('PHPivot: Compare function ' . $this->_filters[$i]['compare'] . ' not defined.');
                                 break;
                         }
                     }
@@ -519,7 +688,7 @@ class PHPivot
                     $filterResult = $filterResult && call_user_func($this->_recordset, $rs_i, $this->_filters[$i]['extra_params']);
                     break;
                 default:
-                    die('Undefined Filter Type: ' . $this->_filters[$i]['_type']);
+                    throw new \RuntimeException('Undefined Filter Type: ' . $this->_filters[$i]['_type']);
                     break;
             }
         }
@@ -711,7 +880,7 @@ class PHPivot
                             break;
 
                         default:
-                            die('ERROR: Value function not defined in PHPivot: ' . $value_function);
+                            throw new \RuntimeException('Value function not defined in PHPivot: ' . $value_function);
                             break;
                     }
                 }
@@ -783,7 +952,7 @@ class PHPivot
                 break;
 
             default:
-                die('getValueFromFormat not programmed to compare display type: ' . $this->_values_display);
+                throw new \RuntimeException('getValueFromFormat not programmed to compare display type: ' . $this->_values_display);
                 break;
         }
         return $a;
@@ -861,7 +1030,7 @@ class PHPivot
                     return 'inherit';
                 break;
             default:
-                die('getColorOf not programmed to handle COLOR_BY=' . $this->_color_by);
+                throw new \RuntimeException('getColorOf not programmed to handle COLOR_BY=' . $this->_color_by);
                 break;
         }
     }
@@ -903,14 +1072,14 @@ class PHPivot
                 break;
             case PHPivot::COLOR_BY_ROW:
                 //@todo
-                die('PHPivot:: COLOR_BY_ROW not yet implemented.');
+                throw new \RuntimeException('PHPivot: COLOR_BY_ROW not yet implemented.');
                 break;
             case PHPivot::COLOR_BY_COL:
                 //@todo
-                die('PHPivot:: COLOR_BY_COL not yet implemented.');
+                throw new \RuntimeException('PHPivot: COLOR_BY_COL not yet implemented.');
                 break;
             default:
-                die('PHPivot ERROR: Cannot color data by ' . $this->_color_by);
+                throw new \RuntimeException('PHPivot: Cannot color data by ' . $this->_color_by);
                 break;
         }
     }
@@ -933,11 +1102,18 @@ class PHPivot
         }
     }
 
-    //Calculates the percentage out of sum given, sets the value (or appends)
-    //making the _val field "3 (23%)" or "23%"
+    /**
+     * Calculates the percentage out of sum given, sets the value (or appends)
+     * making the _val field "23%" or "3 (23%)"
+     * 
+     * @param array $d The data array to process
+     * @param float|int $sum The sum to calculate percentage from
+     * @param bool $keepValue Whether to keep the original value
+     */
     private function setAsPercOf(&$d, $sum, $keepValue = false)
     {
         if (!is_array($d)) return;
+        // Return early to avoid division by zero
         if ($sum == 0) return;
 
         if (array_key_exists('_val', $d)) {
@@ -946,6 +1122,7 @@ class PHPivot
                 $actual_value = 0;
             }
 
+            // Calculate percentage - this is where division by zero would occur without the check above
             $d['_val'] = round($actual_value * 100 / $sum, $this->_decimal_precision);
 
             if ($keepValue) {
@@ -1028,10 +1205,10 @@ class PHPivot
 
                 break;
 
-            //@todo
+            // TODO: Re-implement DISPLAY_AS_PERC_DEEPEST_LEVEL feature
             case PHPivot::DISPLAY_AS_PERC_DEEPEST_LEVEL:
             case PHPivot::DISPLAY_AS_VALUE_AND_PERC_DEEPEST_LEVEL:
-                echo 'WARNING: DISPLAY_AS_PERC_DEEPEST_LEVEL needs re-implementation. Displaying plain values.'; //@todo
+                // Note: DISPLAY_AS_PERC_DEEPEST_LEVEL needs re-implementation. Displaying plain values.
                 break;
             default:
                 $this->_error('Cannot format data as: ' . $this->_values_display);
@@ -1102,7 +1279,7 @@ class PHPivot
                 if (PHPivot::isSystemField($col_name)) continue;
                 $new_html .= $this->getColHtml($col_value, $row_space, $coldepth + 1, $willBeLeftmost);
                 $willBeLeftmost = false;
-                $html .= '<th colspan="' . $this->countChildrenCols($col_value) . '">' . $col_name . '</th>';
+                $html .= '<th colspan="' . $this->countChildrenCols($col_value) . '">' . $this->escapeHtml($col_name) . '</th>';
             }
             if (count($this->_values) - $coldepth > 0) {
                 $html = str_repeat($html, count($this->_values) - $coldepth);
@@ -1138,19 +1315,19 @@ class PHPivot
 
         $top_col_title_html =  '<th colspan="' . $colwidth . '">(No title)</th>';
         if (isset($this->_columns_titles[0])) {
-            $top_col_title_html = '<th colspan="' . $colwidth . '">' . $this->_columns_titles[0] . '</th>';
+            $top_col_title_html = '<th colspan="' . $colwidth . '">' . $this->escapeHtml($this->_columns_titles[0]) . '</th>';
         }
 
         //If multi-values, use multiple column titles (for additional values)
         if (count($this->_values) > 1) {
             for ($i = 1; $i < count($this->_columns_titles); $i++) {
-                $top_col_title_html .=  '<th colspan="' . $colwidth . '">' . $this->_columns_titles[$i] . '</th>';
+                $top_col_title_html .=  '<th colspan="' . $colwidth . '">' . $this->escapeHtml($this->_columns_titles[$i]) . '</th>';
             }
         }
 
         $html_row_titles = '<tr>';
         for ($i = 0; $i < count($this->_rows_titles); $i++) {
-            $html_row_titles .= '<th class="row_title">' . $this->_rows_titles[$i] . '</th>';
+            $html_row_titles .= '<th class="row_title">' . $this->escapeHtml($this->_rows_titles[$i]) . '</th>';
         }
         $html_row_titles .= '</tr>';
 
@@ -1170,9 +1347,8 @@ class PHPivot
     protected function getDataValue($row)
     {
         if (is_array($row) && (isset($row['_val']) || strcmp($row['_val'], '') == 0)) return $row['_val'];
-        echo 'CANNOT find ["_val"] of: ';
-        print_r($row);
-        die('Exiting...');
+        // Don't expose potentially sensitive data structure details in exception
+        throw new \RuntimeException('PHPivot: Cannot find ["_val"] in data row (invalid data structure)');
     }
 
     //Figures out where the actual value is and produces html code
@@ -1187,7 +1363,7 @@ class PHPivot
         if (!PHPivot::isDataLevel($row)) {
             $html = '';
             if ($type == null || strcmp($type, PHPivot::TYPE_ROW) == 0) {
-                $html .= '<td>' . $key . '</td>';
+                $html .= '<td>' . $this->escapeHtml($key) . '</td>';
             }
             foreach ($row as $head => $nest) {
                 if (PHPivot::isSystemField($head)) continue;
@@ -1203,27 +1379,27 @@ class PHPivot
             if (isset($row['_type']) && strcmp($row['_type'], PHPivot::TYPE_COMP) == 0) { //Deepest level row, with comparison data
                 $c = '<td>';
                 for ($i = 0; $i < count($row['_val']); $i++) {
-                    $c .=  $row['_val'][$i];
+                    $c .=  $this->escapeHtml($row['_val'][$i]);
                     if ($i + 1 < count($row['_val'])) $c .= ' &rarr; ';
                 }
                 $c .= '</td>';
                 return $c;
             } else if (isset($row['_type']) && strcmp($row['_type'], PHPivot::TYPE_VAL) == 0) { //Deepest level row, with value data
-                return '<td>' . $this->getDataValue($row) . '</td>';
+                return '<td>' . $this->escapeHtml($this->getDataValue($row)) . '</td>';
             } else if ($type == PHPivot::TYPE_ROW) { //Deepest level row
-                $html = '<tr>' . $levelshtml . '<td>' . $key . '</td>';
-                $html .= '<td style="background:' . $this->getColorOf($row) . ' !important">' . $row . '</td>';
+                $html = '<tr>' . $levelshtml . '<td>' . $this->escapeHtml($key) . '</td>';
+                $html .= '<td style="background:' . $this->escapeHtml($this->getColorOf($row)) . ' !important">' . $this->escapeHtml($row) . '</td>';
                 return $html . '</tr>';
             } else { //Deepest level column
                 if ($levels == 0) {
                     if (PHPivot::isSystemField($key)) return '';
-                    return '<tr><td>' . $key . '</td><td style="background:' . $this->getColorOf($row) . ' !important">' . $row . '</td></tr>';
+                    return '<tr><td>' . $this->escapeHtml($key) . '</td><td style="background:' . $this->escapeHtml($this->getColorOf($row)) . ' !important">' . $this->escapeHtml($row) . '</td></tr>';
                 } else {
                     $inNest = ($levels - count($this->_columns) - count($this->_rows) + 1 > 0);
                     if (!$inNest) {
-                        return '<td style="background:' . $this->getColorOf($row) . ' !important">' . $row . '</td>';
+                        return '<td style="background:' . $this->escapeHtml($this->getColorOf($row)) . ' !important">' . $this->escapeHtml($row) . '</td>';
                     } else {
-                        return  '<td>' . $key . '</td>' . '<td style="background:' . $this->getColorOf($row) . ' !important">' . $row . '</td>';
+                        return  '<td>' . $this->escapeHtml($key) . '</td>' . '<td style="background:' . $this->escapeHtml($this->getColorOf($row)) . ' !important">' . $this->escapeHtml($row) . '</td>';
                     }
                 }
             }
