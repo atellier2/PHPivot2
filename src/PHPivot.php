@@ -2,11 +2,14 @@
 
 namespace Atellier2\PHPivot;
 
+use Atellier2\PHPivot\Utils\Utils;
+use Atellier2\PHPivot\Utils\ArrayUtils;
+use Atellier2\PHPivot\Utils\ColorUtils;
+use Atellier2\PHPivot\Utils\ValueUtils;
 use Atellier2\PHPivot\Config\PivotConstants;
+use Atellier2\PHPivot\Service\Filter\CustomFilter;
 use Atellier2\PHPivot\Service\Filter\FilterInterface;
 use Atellier2\PHPivot\Service\Filter\ComparisonFilter;
-use Atellier2\PHPivot\Service\Filter\CustomFilter;
-
 
 class PHPivot
 {
@@ -28,7 +31,7 @@ class PHPivot
     protected $_rows_titles = array();
 
     /* array of booleans indicating whether to show sum for each row level */
-    protected $_rows_sum = array(); 
+    protected $_rows_sum = array();
 
     /**
      * @var int|array|callable Sort order for rows (SORT_ASC, SORT_DESC, or callable)
@@ -57,19 +60,7 @@ class PHPivot
 
     protected $_source_is_2DTable = false;
 
-    /**
-     * Escape HTML special characters to prevent XSS
-     * 
-     * @param mixed $value The value to escape
-     * @return string The escaped value
-     */
-    private function escapeHtml($value)
-    {
-        if (is_null($value)) {
-            return '';
-        }
-        return htmlspecialchars((string)$value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-    }
+
 
     public static function create($recordset)
     {
@@ -84,10 +75,8 @@ class PHPivot
         $pivotTable = array_merge(array(), $recordset);
 
         $array_rows = array_keys($pivotTable);
-        $count_rows = count($array_rows);
 
         $array_vals = array_keys($pivotTable[$array_rows[0]]);
-        $count_vals = count($array_vals);
 
         foreach ($pivotTable as $rowName => $rowContent) {
             $pivotTable[$rowName]['_type'] = PivotConstants::TYPE_COL;
@@ -115,7 +104,6 @@ class PHPivot
         $pivotTable = array_merge(array(), $recordset);
 
         $array_rows = array_keys($pivotTable);
-        $count_rows = count($array_rows);
 
         $pivotTable['_type'] = PivotConstants::TYPE_ROW;
 
@@ -312,21 +300,21 @@ class PHPivot
     public function setColorRange($low = '#00af5d', $high = '#ff0017', $colorBy = null)
     {
         // Validate hex color format
-        if (!preg_match('/^#[0-9A-Fa-f]{6}$/', $low)) {
+        if (!ColorUtils::isValidHexColor($low)) {
             throw new \InvalidArgumentException('Low color must be in hex format #RRGGBB');
         }
-        if (!preg_match('/^#[0-9A-Fa-f]{6}$/', $high)) {
+        if (!ColorUtils::isValidHexColor($high)) {
             throw new \InvalidArgumentException('High color must be in hex format #RRGGBB');
         }
-        
+
         if (is_null($colorBy)) {
             $colorBy = PivotConstants::COLOR_ALL;
         }
-        
+
         if (!in_array($colorBy, [PivotConstants::COLOR_ALL, PivotConstants::COLOR_BY_ROW, PivotConstants::COLOR_BY_COL], true)) {
             throw new \InvalidArgumentException('Invalid colorBy parameter.');
         }
-        
+
         $this->_color_by = $colorBy;
         $this->_color_low = $low;
         $this->_color_high = $high;
@@ -335,40 +323,33 @@ class PHPivot
     }
 
     //in case we have no data, we could omit it if flag set
-    protected function cleanBlanks(&$point = null)
+    protected function cleanBlanks(?array &$point = null):int
     {
         if (!$this->_ignore_blanks) return null;
 
         $countNonBlank = 0;
         if (PHPivot::isDataLevel($point)) {
-            if (!is_array($point)) return (!is_null($point) && !empty($point) ? 1 : 0);
-            else if (strcmp($point['_type'], PivotConstants::TYPE_COMP) == 0) {
-                $data_values = PHPivot::pivot_array_values($point);
+            if (!is_array($point)) {
+                return (!is_null($point) && !empty($point) ? 1 : 0);
+            } else if (in_array($point['_type'], [PivotConstants::TYPE_COMP, PivotConstants::TYPE_VAL], true)) {
+                $data_values = ArrayUtils::getPivotValues($point);
                 for ($i = 0; $i < count($data_values); $i++) {
                     if (!is_null($data_values[$i]) && !empty($data_values[$i])) {
                         $countNonBlank++;
                     }
                 }
                 return $countNonBlank;
-            } else if (strcmp($point['_type'], PivotConstants::TYPE_VAL) == 0) {
-                $data_values = PHPivot::pivot_array_values($point);
-                for ($i = 0; $i < count($data_values); $i++) {
-                    if (!is_null($data_values[$i]) && !empty($data_values[$i])) {
-                        $countNonBlank++;
-                    }
-                }
-                return $countNonBlank;
-            }
+            } 
         }
 
         $point_keys = array_keys($point);
 
         for ($i = count($point_keys) - 1; $i >= 0; $i--) {
-            if (PHPivot::isSystemField($point_keys[$i])) continue;
+            if (ArrayUtils::isSystemField($point_keys[$i])) continue;
 
             if ($this->cleanBlanks($point[$point_keys[$i]]) > 0) {
                 $countNonBlank++;
-            } else if (isset($point['_type']) && strcmp($point['_type'], PivotConstants::TYPE_ROW) == 0) {
+            } else if (isset($point['_type']) && $point['_type'] === PivotConstants::TYPE_ROW) {
                 unset($point[$point_keys[$i]]);
             }
         }
@@ -504,9 +485,9 @@ class PHPivot
     }
 
     //pass data through filters and see if it's a match
-    private function isFilterOK($rs_row):bool
+    private function isFilterOK($rs_row): bool
     {
-                foreach ($this->_filters as $filter) {
+        foreach ($this->_filters as $filter) {
             if (!$filter instanceof FilterInterface) {
                 throw new \RuntimeException('Filtre invalide : doit implémenter FilterInterface');
             }
@@ -552,7 +533,7 @@ class PHPivot
     /**
      * generate the pivot table; internal representation
      */
-    public function generate()
+    public function generate():self
     {
         $table = array();
 
@@ -716,20 +697,12 @@ class PHPivot
         return $this;
     }
 
-    protected static function isSystemField($fieldName)
-    {
-        for ($i = 0; $i < count(PHPivot::$SYSTEM_FIELDS); $i++) {
-            if (strcmp($fieldName, PHPivot::$SYSTEM_FIELDS[$i]) == 0) {
-                return true;
-            }
-        }
-        return false;
-    }
+
 
     protected static function isDeepestLevel(&$row)
     {
         foreach ($row as $key => $child) {
-            if (PHPivot::isSystemField($key)) continue;
+            if (ArrayUtils::isSystemField($key)) continue;
             if (isset($row[$key]['_type'])) {
                 return false;
             }
@@ -743,70 +716,35 @@ class PHPivot
     protected static function isDataLevel(&$row)
     {
         return !is_array($row) || (isset($row['_type']) &&
-            (strcmp($row['_type'], PivotConstants::TYPE_VAL) == 0 ||
-                strcmp($row['_type'], PivotConstants::TYPE_COMP) == 0));
+            ($row['_type'] === PivotConstants::TYPE_VAL ||
+                $row['_type'] === PivotConstants::TYPE_COMP));
     }
 
-    //returns actual value even when formatted
-    //@consider: maybe just keep it separate?
-    private function getValueFromFormat($a)
-    {
-        if (is_null($a)) return $a;
-        switch ($this->_values_display) {
-            //@todo multi-value
-            case PivotConstants::DISPLAY_AS_PERC_DEEPEST_LEVEL:
-            case PivotConstants::DISPLAY_AS_VALUE_AND_PERC_DEEPEST_LEVEL:
-            case PivotConstants::DISPLAY_AS_VALUE:
-                break;
 
-            case PivotConstants::DISPLAY_AS_PERC_DEEPEST_LEVEL:
-                $a = round(substr($a, 0, strpos($a, '%')), $this->_decimal_precision);
-                break;
 
-            case PivotConstants::DISPLAY_AS_VALUE_AND_PERC_DEEPEST_LEVEL:
-                $a = round(substr($a, strpos($a, '(') + 1, strpos($a, ')') - 1), $this->_decimal_precision);
-                break;
 
-            default:
-                throw new \RuntimeException('getValueFromFormat not programmed to compare display type: ' . $this->_values_display);
-                break;
-        }
-        return $a;
-    }
-
-    private function getEdgeValue($a, $b, $findMax = true)
-    {
-        if (is_null($a)) return $b;
-        if (is_null($b)) return $a;
-
-        if ($findMax) {
-            return ($a > $b ? $a : $b);
-        } else {
-            return ($a < $b ? $a : $b);
-        }
-    }
 
     private function findMax(&$row, $findMax = true)
     {
         if (PHPivot::isDataLevel($row)) {
-            $v = PHPivot::pivot_array_values($row);
+            $v = ArrayUtils::getPivotValues($row);
             $find = null;
             if (empty($v)) return null;
 
             if (is_array($v)) {
-                $find = $this->getValueFromFormat($v[0]);
+                $find = ValueUtils::getValueFromFormat($v[0], $this->_values_display);
                 for ($i = 1; $i < count($v); $i++) {
-                    $find = $this->getEdgeValue($find, $this->getValueFromFormat($v[$i]), $findMax);
+                    $find = ValueUtils::getEdgeValue($find, ValueUtils::getValueFromFormat($v[$i], $this->_values_display), $findMax);
                 }
             } else {
-                $find = $this->getValueFromFormat($v);
+                $find = ValueUtils::getValueFromFormat($v, $this->_values_display);
             }
             return $find;
         } else {
             $find = null;
-            $k = PHPivot::pivot_array_keys($row);
+            $k = ArrayUtils::getPivotKeys($row);
             for ($i = 0; $i < count($k); $i++) {
-                $find = $this->getEdgeValue($find, PHPivot::findMax($row[$k[$i]], $findMax), $findMax);
+                $find = ValueUtils::getEdgeValue($find, PHPivot::findMax($row[$k[$i]], $findMax), $findMax);
             }
             return $find;
         }
@@ -817,15 +755,7 @@ class PHPivot
         return $this->findMax($row, false);
     }
 
-    private static function hexToRGB($hex)
-    {
-        $hex = str_replace('#', '', $hex);
-        $rgb = array();
-        $rgb['r'] = hexdec(substr($hex, 0, 2));
-        $rgb['g'] = hexdec(substr($hex, 2, 2));
-        $rgb['b'] = hexdec(substr($hex, 4, 2));
-        return $rgb;
-    }
+
 
     private static function toHexColor($RGB)
     {
@@ -839,7 +769,7 @@ class PHPivot
         //@todo multi-value
         switch ($this->_color_by) {
             case PivotConstants::COLOR_ALL:
-                $v = $this->getValueFromFormat($value);
+                $v = ValueUtils::getValueFromFormat($value, $this->_values_display);
                 if (isset($this->_color_of[$v]))
                     return $this->_color_of[$v];
                 else
@@ -869,8 +799,8 @@ class PHPivot
                 //@todo: Bezier increments (smoother gradients)
                 //NOTE: Another approach would be linear interpolation between 2 colors?
                 //http://bsou.io/posts/color-gradients-with-python
-                $fromColor = PHPivot::hexToRGB($this->_color_low);
-                $toColor = PHPivot::hexToRGB($this->_color_high);
+                $fromColor = ColorUtils::hexToRGB($this->_color_low);
+                $toColor = ColorUtils::hexToRGB($this->_color_high);
                 $stepBy = array(
                     'r' => (($fromColor['r'] - $toColor['r']) / ($stops - 1)),
                     'g' => (($fromColor['g'] - $toColor['g']) / ($stops - 1)),
@@ -900,23 +830,7 @@ class PHPivot
         }
     }
 
-    /**
-     * sums up all values in the given data array
-     */
-    private function getSumOf(&$d)
-    {
-        if (!is_array($d)) return 0;
 
-        if (array_key_exists('_val', $d)) {
-            return $d['_val'];
-        } else {
-            $sum = 0;
-            foreach ($d as $k => $v) {
-                $sum = $sum + $this->getSumOf($d[$k]);
-            }
-            return $sum;
-        }
-    }
 
     /**
      * Calculates the percentage out of sum given, sets the value (or appends)
@@ -965,7 +879,7 @@ class PHPivot
                 if (!is_array($row)) return;
 
                 //BFS and reach the deepest row
-                if (!empty(($row)) && array_key_exists('_type', $row) && strcmp($row['_type'], PivotConstants::TYPE_ROW) == 0) {
+                if (!empty(($row)) && array_key_exists('_type', $row) && $row['_type'] === PivotConstants::TYPE_ROW) {
                     $keys = array_keys($row);
                     $keycount = count($keys);
                     for ($i = 0; $i < $keycount; $i++) {
@@ -976,7 +890,7 @@ class PHPivot
 
                 //We are at columns level:
                 //Sum up all VALUES
-                $sum = $this->getSumOf($row);
+                $sum = ValueUtils::getSumOf($row);
 
                 $keepValue = false;
                 switch ($this->_values_display) {
@@ -996,7 +910,7 @@ class PHPivot
                 if (!is_array($row)) return;
 
                 //BFS and reach the deepest COL
-                if (!empty(($row)) && array_key_exists('_type', $row) && strcmp($row['_type'], PivotConstants::TYPE_COL) == 0) {
+                if (!empty(($row)) && array_key_exists('_type', $row) && ($row['_type']=== PivotConstants::TYPE_COL) == 0) {
                     $keys = array_keys($row);
                     $keycount = count($keys);
                     for ($i = 0; $i < $keycount; $i++) {
@@ -1007,7 +921,7 @@ class PHPivot
 
                 //We are at columns level:
                 //Sum up all VALUES
-                $sum = $this->getSumOf($row);
+                $sum = ValueUtils::getSumOf($row);
 
                 $keepValue = false;
                 switch ($this->_values_display) {
@@ -1032,7 +946,7 @@ class PHPivot
         }
     }
 
-    public function toArray()
+    public function toArray():array
     {
         return $this->_table;
     }
@@ -1042,28 +956,6 @@ class PHPivot
         return $this->_raw_table;
     }
 
-    protected static function pivot_array_keys(&$array)
-    {
-        $keys = array();
-        if (!is_array($array)) return $keys;
-        foreach ($array as $key => $val) {
-            if (PHPivot::isSystemField($key)) continue;
-            array_push($keys, $key);
-        }
-        return $keys;
-    }
-
-    protected static function pivot_array_values(&$array)
-    {
-        $values = array();
-        if (!is_array($array)) return $array;
-        foreach ($array as $key => $val) {
-            if (PHPivot::isSystemField($key)) continue;
-            array_push($values, $val);
-        }
-        return $values;
-    }
-
     //Counts number of children columns
     protected static function countChildrenCols($array, $_source_is_2DTable = false)
     {
@@ -1071,7 +963,7 @@ class PHPivot
         if (!$_source_is_2DTable) {
             if (is_array($array) && isset($array['_type']) && $array['_type'] == PivotConstants::TYPE_COL) {
                 foreach ($array as $col_name => $col_value) {
-                    if (PHPivot::isSystemField($col_name)) continue;
+                    if (ArrayUtils::isSystemField($col_name)) continue;
                     $children += PHPivot::countChildrenCols($col_value);
                 }
             }
@@ -1079,7 +971,7 @@ class PHPivot
                 $children = 1;
             }
         } else {
-            return count(PHPivot::pivot_array_keys($array)) + 1;
+            return count(ArrayUtils::getPivotKeys($array)) + 1;
         }
         return $children;
     }
@@ -1092,10 +984,10 @@ class PHPivot
             $new_html = '';
             $willBeLeftmost = true;
             foreach ($colpoint as $col_name => $col_value) {
-                if (PHPivot::isSystemField($col_name)) continue;
+                if (ArrayUtils::isSystemField($col_name)) continue;
                 $new_html .= $this->getColHtml($col_value, $row_space, $coldepth + 1, $willBeLeftmost);
                 $willBeLeftmost = false;
-                $html .= '<th colspan="' . $this->countChildrenCols($col_value) . '">' . $this->escapeHtml($col_name) . '</th>';
+                $html .= '<th colspan="' . $this->countChildrenCols($col_value) . '">' . Utils::escapeHtml($col_name) . '</th>';
             }
             if (count($this->_values) - $coldepth > 0) {
                 $html = str_repeat($html, count($this->_values) - $coldepth);
@@ -1120,10 +1012,10 @@ class PHPivot
 
         $html_cols = '';
         //Print Column Values (final level)
-        $colpoint = isset(PHPivot::pivot_array_values($this->_table)[0]) ? PHPivot::pivot_array_values($this->_table)[0] : null;
+        $colpoint = isset(ArrayUtils::getPivotValues($this->_table)[0]) ? ArrayUtils::getPivotValues($this->_table)[0] : null;
         $rowDepth = 1;
         while (!is_null($colpoint) && count($this->_rows) - $rowDepth > 0) {
-            $colpoint = isset(PHPivot::pivot_array_values($colpoint)[0]) ? PHPivot::pivot_array_values($colpoint)[0] : null;
+            $colpoint = isset(ArrayUtils::getPivotValues($colpoint)[0]) ? ArrayUtils::getPivotValues($colpoint)[0] : null;
             $rowDepth++;
         }
         $html_cols = $this->getColHtml($colpoint, $row_space);
@@ -1131,19 +1023,19 @@ class PHPivot
 
         $top_col_title_html =  '<th colspan="' . $colwidth . '">(No title)</th>';
         if (isset($this->_columns_titles[0])) {
-            $top_col_title_html = '<th colspan="' . $colwidth . '">' . $this->escapeHtml($this->_columns_titles[0]) . '</th>';
+            $top_col_title_html = '<th colspan="' . $colwidth . '">' . Utils::escapeHtml($this->_columns_titles[0]) . '</th>';
         }
 
         //If multi-values, use multiple column titles (for additional values)
         if (count($this->_values) > 1) {
             for ($i = 1; $i < count($this->_columns_titles); $i++) {
-                $top_col_title_html .=  '<th colspan="' . $colwidth . '">' . $this->escapeHtml($this->_columns_titles[$i]) . '</th>';
+                $top_col_title_html .=  '<th colspan="' . $colwidth . '">' . Utils::escapeHtml($this->_columns_titles[$i]) . '</th>';
             }
         }
 
         $html_row_titles = '<tr>';
         for ($i = 0; $i < count($this->_rows_titles); $i++) {
-            $html_row_titles .= '<th class="row_title">' . $this->escapeHtml($this->_rows_titles[$i]) . '</th>';
+            $html_row_titles .= '<th class="row_title">' . Utils::escapeHtml($this->_rows_titles[$i]) . '</th>';
         }
         $html_row_titles .= '</tr>';
 
@@ -1162,7 +1054,7 @@ class PHPivot
 
     protected function getDataValue($row)
     {
-        if (is_array($row) && (isset($row['_val']) || strcmp($row['_val'], '') == 0)) return $row['_val'];
+        if (is_array($row) && (isset($row['_val']) || $row['_val'] === '')) return $row['_val'];
         // Don't expose potentially sensitive data structure details in exception
         throw new \RuntimeException('PHPivot: Cannot find ["_val"] in data row (invalid data structure)');
     }
@@ -1178,44 +1070,44 @@ class PHPivot
 
         if (!PHPivot::isDataLevel($row)) {
             $html = '';
-            if ($type == null || strcmp($type, PivotConstants::TYPE_ROW) == 0) {
-                $html .= '<td>' . $this->escapeHtml($key) . '</td>';
+            if ($type == null || $type === PivotConstants::TYPE_ROW) {
+                $html .= '<td>' . Utils::escapeHtml($key) . '</td>';
             }
             foreach ($row as $head => $nest) {
-                if (PHPivot::isSystemField($head)) continue;
+                if (ArrayUtils::isSystemField($head)) continue;
                 $t = isset($row['_type']) ?  $row['_type'] : null;
                 $new_row = $this->htmlValues($head, $nest, $levels + 1, $t);
                 $html .=  $new_row;
             }
-            if ($type == null || strcmp($type, PivotConstants::TYPE_ROW) == 0) {
+            if ($type == null || $type === PivotConstants::TYPE_ROW) {
                 $html = '<tr>' . $levelshtml . $html . '</tr>';
             }
             return $html;
         } else {
-            if (isset($row['_type']) && strcmp($row['_type'], PivotConstants::TYPE_COMP) == 0) { //Deepest level row, with comparison data
+            if (isset($row['_type']) && $row['_type'] === PivotConstants::TYPE_COMP) { //Deepest level row, with comparison data
                 $c = '<td>';
                 for ($i = 0; $i < count($row['_val']); $i++) {
-                    $c .=  $this->escapeHtml($row['_val'][$i]);
+                    $c .=  Utils::escapeHtml($row['_val'][$i]);
                     if ($i + 1 < count($row['_val'])) $c .= ' &rarr; ';
                 }
                 $c .= '</td>';
                 return $c;
-            } else if (isset($row['_type']) && strcmp($row['_type'], PivotConstants::TYPE_VAL) == 0) { //Deepest level row, with value data
-                return '<td>' . $this->escapeHtml($this->getDataValue($row)) . '</td>';
+            } else if (isset($row['_type']) && $row['_type'] === PivotConstants::TYPE_VAL) { //Deepest level row, with value data
+                return '<td>' . Utils::escapeHtml($this->getDataValue($row)) . '</td>';
             } else if ($type == PivotConstants::TYPE_ROW) { //Deepest level row
-                $html = '<tr>' . $levelshtml . '<td>' . $this->escapeHtml($key) . '</td>';
-                $html .= '<td style="background:' . $this->escapeHtml($this->getColorOf($row)) . ' !important">' . $this->escapeHtml($row) . '</td>';
+                $html = '<tr>' . $levelshtml . '<td>' . Utils::escapeHtml($key) . '</td>';
+                $html .= '<td style="background:' . Utils::escapeHtml($this->getColorOf($row)) . ' !important">' . Utils::escapeHtml($row) . '</td>';
                 return $html . '</tr>';
             } else { //Deepest level column
                 if ($levels == 0) {
-                    if (PHPivot::isSystemField($key)) return '';
-                    return '<tr><td>' . $this->escapeHtml($key) . '</td><td style="background:' . $this->escapeHtml($this->getColorOf($row)) . ' !important">' . $this->escapeHtml($row) . '</td></tr>';
+                    if (ArrayUtils::isSystemField($key)) return '';
+                    return '<tr><td>' . Utils::escapeHtml($key) . '</td><td style="background:' . Utils::escapeHtml($this->getColorOf($row)) . ' !important">' . Utils::escapeHtml($row) . '</td></tr>';
                 } else {
                     $inNest = ($levels - count($this->_columns) - count($this->_rows) + 1 > 0);
                     if (!$inNest) {
-                        return '<td style="background:' . $this->escapeHtml($this->getColorOf($row)) . ' !important">' . $this->escapeHtml($row) . '</td>';
+                        return '<td style="background:' . Utils::escapeHtml($this->getColorOf($row)) . ' !important">' . Utils::escapeHtml($row) . '</td>';
                     } else {
-                        return  '<td>' . $this->escapeHtml($key) . '</td>' . '<td style="background:' . $this->escapeHtml($this->getColorOf($row)) . ' !important">' . $this->escapeHtml($row) . '</td>';
+                        return  '<td>' . Utils::escapeHtml($key) . '</td>' . '<td style="background:' . Utils::escapeHtml($this->getColorOf($row)) . ' !important">' . Utils::escapeHtml($row) . '</td>';
                     }
                 }
             }
