@@ -7,6 +7,7 @@ use Atellier2\PHPivot\Utils\ArrayUtils;
 use Atellier2\PHPivot\Utils\ColorUtils;
 use Atellier2\PHPivot\Utils\ValueUtils;
 use Atellier2\PHPivot\Config\PivotConstants;
+use Atellier2\PHPivot\Exception\PHPivotException;
 use Atellier2\PHPivot\Service\Filter\CustomFilter;
 use Atellier2\PHPivot\Service\Filter\FilterInterface;
 use Atellier2\PHPivot\Service\Filter\ComparisonFilter;
@@ -163,17 +164,6 @@ class PHPivot
     }
 
     /**
-     * Throw a PHPivot exception
-     * 
-     * @param string $msg The error message
-     * @throws \RuntimeException
-     */
-    private function _error($msg)
-    {
-        throw new \RuntimeException('PHPivot ERROR: ' . $msg);
-    }
-
-    /**
      * define the value fields, their functions and display mode
      * 
      * @param array|string $values The value fields
@@ -194,7 +184,7 @@ class PHPivot
                 $fn = $functions[0];
                 $functions = array_fill(0, count($values), $fn);
             } else {
-                $this->_error('Value Fields and Function Count do not match.');
+                throw new PHPivotException('Value Fields and Function Count do not match.', PHPivotException::INVALID_CONFIGURATION);
             }
         }
         if (!is_null($titles) && !is_array($titles)) {
@@ -284,7 +274,9 @@ class PHPivot
         if (!is_int($precision) || $precision < 0) {
             throw new \InvalidArgumentException('Decimal precision must be a non-negative integer.');
         }
+
         $this->_decimal_precision = $precision;
+
         return $this;
     }
 
@@ -322,10 +314,15 @@ class PHPivot
         return $this;
     }
 
-    //in case we have no data, we could omit it if flag set
-    protected function cleanBlanks(?array &$point = null):int
+    /**
+     * In case we have no data, we could omit it if flag set
+     * 
+     * @param array|null $point The current point in the pivot table
+     * @return int|bool The count of non-blank values or false if blanks are not ignored
+     */
+    protected function cleanBlanks(?array &$point = null):int|bool
     {
-        if (!$this->_ignore_blanks) return null;
+        if (!$this->_ignore_blanks) return 0;
 
         $countNonBlank = 0;
         if (PHPivot::isDataLevel($point)) {
@@ -489,7 +486,7 @@ class PHPivot
     {
         foreach ($this->_filters as $filter) {
             if (!$filter instanceof FilterInterface) {
-                throw new \RuntimeException('Filtre invalide : doit implémenter FilterInterface');
+                throw new PHPivotException('Invalid filter, must implement FilterInterface', PHPivotException::INVALID_CONFIGURATION);
             }
             if (!$filter->matches($rs_row)) {
                 return false;
@@ -677,7 +674,7 @@ class PHPivot
                             break;
 
                         default:
-                            throw new \RuntimeException('Value function not defined in PHPivot: ' . $value_function);
+                            throw new PHPivotException('Value function not recognized: ' . $value_function, PHPivotException::INVALID_CONFIGURATION);
                             break;
                     }
                 }
@@ -776,7 +773,7 @@ class PHPivot
                     return 'inherit';
                 break;
             default:
-                throw new \RuntimeException('getColorOf not programmed to handle COLOR_BY=' . $this->_color_by);
+                throw new PHPivotException('getColorOf not programmed to handle COLOR_BY=' . $this->_color_by, PHPivotException::INVALID_CONFIGURATION);
                 break;
         }
     }
@@ -818,14 +815,14 @@ class PHPivot
                 break;
             case PivotConstants::COLOR_BY_ROW:
                 //@todo
-                throw new \RuntimeException('PHPivot: COLOR_BY_ROW not yet implemented.');
+                throw new PHPivotException('PHPivot: COLOR_BY_ROW not yet implemented.', PHPivotException::INVALID_CONFIGURATION);
                 break;
             case PivotConstants::COLOR_BY_COL:
                 //@todo
-                throw new \RuntimeException('PHPivot: COLOR_BY_COL not yet implemented.');
+                throw new PHPivotException('PHPivot: COLOR_BY_COL not yet implemented.', PHPivotException::INVALID_CONFIGURATION);
                 break;
             default:
-                throw new \RuntimeException('PHPivot: Cannot color data by ' . $this->_color_by);
+                throw new PHPivotException('PHPivot: Cannot color data by ' . $this->_color_by, PHPivotException::INVALID_CONFIGURATION);
                 break;
         }
     }
@@ -865,7 +862,9 @@ class PHPivot
         }
     }
 
-    //Formats the values as requested in class variable "_values_display" (e.g. % by column)
+    /**
+    * Formats the values as requested in class variable "_values_display" (e.g. % by column)
+    */
     private function formatData(&$row)
     {
         switch ($this->_values_display) {
@@ -941,7 +940,7 @@ class PHPivot
                 // Note: DISPLAY_AS_PERC_DEEPEST_LEVEL needs re-implementation. Displaying plain values.
                 break;
             default:
-                $this->_error('Cannot format data as: ' . $this->_values_display);
+                throw new PHPivotException('PHPivot: Cannot format data as: ' . $this->_values_display, PHPivotException::INVALID_CONFIGURATION);
                 break;
         }
     }
