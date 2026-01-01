@@ -3,6 +3,7 @@
 namespace Atellier2\PHPivot;
 
 //PHPivot
+// https://github.com/mhadjimichael/PHPivot?tab=readme-ov-file/
 /*Supported Features:
     -Can Import "Prepared" 2D Array/Table
     -Nested (infinite) rows and columns
@@ -96,6 +97,8 @@ class PHPivot
     protected $_columns_sort = self::SORT_ASC;
     protected $_rows = array();
     protected $_rows_titles = array();
+    /* array of booleans indicating whether to show sum for each row level */
+    protected $_rows_sum = array(); 
     protected $_rows_sort = self::SORT_ASC;
     protected $_ignore_blanks = false;
 
@@ -215,6 +218,14 @@ class PHPivot
         die('<h4>ERROR: ' . $msg . '</h4>');
     }
 
+    /**
+     * define the value fields, their functions and display mode
+     * 
+     * @param array|string $values The value fields
+     * @param array|int $functions The functions to apply to each value field
+     * @param int $display The display mode (see DISPLAY_AS_ constants)
+     * @param array|string $titles The titles of the value fields (optional)
+     */
     public function setPivotValueFields($values, $functions = PHPivot::PIVOT_VALUE_SUM, /*only 1*/ $display = PHPivot::DISPLAY_AS_VALUE, $titles = null)
     {
         if (!is_array($values)) {
@@ -254,6 +265,13 @@ class PHPivot
         return $this;
     }
 
+    /**
+     * define how to display the values
+     * 
+     * data could be displayed as: value, percentage of column, percentage of row, percentage of deepest level, etc.
+     * 
+     * @param int $display The display mode (see DISPLAY_AS_ constants)
+     */
     public function setDisplayAs($display = PHPivot::DISPLAY_AS_VALUE)
     {
         $this->_values_display = $display;
@@ -368,6 +386,17 @@ class PHPivot
         return $this;
     }
 
+    /**
+     * Add calculated columns
+     * 
+     * The function(s) should be defined as:
+     * function user_defined_calculated_column_function($recordset, $rowID, $extra_params = null)
+     * and should return the calculated value for that row.
+     * 
+     * @param array|string $col_name The name(s) of the calculated column(s)
+     * @param array|string $calc_function The function(s) to calculate the column(s)
+     * @param array|string $extra_params Extra parameters to pass to the function(s) (optional)
+     */
     public function addCalculatedColumns($col_name, $calc_function, $extra_params = null)
     {
         if (!is_array($col_name) && !is_array($calc_function)) {
@@ -497,7 +526,11 @@ class PHPivot
         return $filterResult;
     }
 
-    //Produce calculated columns
+    /**
+     * Produce calculated columns
+     * 
+     * 
+     */
     protected function calculateColumns()
     {
         $recordset_rows = count($this->_recordset);
@@ -525,7 +558,9 @@ class PHPivot
         return $this;
     }
 
-    //generate the pivot table; internal representation
+    /**
+     * generate the pivot table; internal representation
+     */
     public function generate()
     {
         $table = array();
@@ -717,6 +752,9 @@ class PHPivot
         return true;
     }
 
+    /**
+     * check if we're at data level
+     */
     protected static function isDataLevel(&$row)
     {
         return !is_array($row) || (isset($row['_type']) &&
@@ -877,6 +915,9 @@ class PHPivot
         }
     }
 
+    /**
+     * sums up all values in the given data array
+     */
     private function getSumOf(&$d)
     {
         if (!is_array($d)) return 0;
