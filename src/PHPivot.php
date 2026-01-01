@@ -39,7 +39,7 @@ namespace Atellier2\PHPivot;
 
 
   @todo
-  -Make sure % sums up to exaclty 100%
+  -Make sure % sums up to exactly 100%
     -http://stackoverflow.com/questions/13483430/how-to-make-rounded-percentages-add-up-to-100
 
 */
@@ -498,7 +498,7 @@ class PHPivot{
         return $this;
     }
 
-    //generate the pivot table; internal representaiton
+    //generate the pivot table; internal representation
     public function generate(){
         $table = array();
 
@@ -949,7 +949,7 @@ class PHPivot{
             //@todo
             case PHPivot::DISPLAY_AS_PERC_DEEPEST_LEVEL:
             case PHPivot::DISPLAY_AS_VALUE_AND_PERC_DEEPEST_LEVEL:
-                echo 'WARNING: DISPLAY_AS_PERC_DEEPEST_LEVEL needs re-implementaiton. Displaying plain values.'; //@todo
+                echo 'WARNING: DISPLAY_AS_PERC_DEEPEST_LEVEL needs re-implementation. Displaying plain values.'; //@todo
             break;
             default:
                 $this->_error('Cannot format data as: ' . $this->_values_display);
