@@ -434,6 +434,17 @@ class PHPivot
     }
 
     /**
+     * Validate a single sort value
+     * 
+     * @param mixed $sort The sort value to validate
+     * @return bool True if valid
+     */
+    private function isValidSortValue($sort)
+    {
+        return is_callable($sort) || in_array($sort, [self::SORT_ASC, self::SORT_DESC]);
+    }
+
+    /**
      * Validate sort parameter
      * 
      * @param int|array|callable $sortby The sort parameter to validate
@@ -443,11 +454,11 @@ class PHPivot
     {
         if (is_array($sortby)) {
             foreach ($sortby as $sort) {
-                if (!is_callable($sort) && !in_array($sort, [self::SORT_ASC, self::SORT_DESC])) {
+                if (!$this->isValidSortValue($sort)) {
                     throw new \InvalidArgumentException('Invalid sort value in array.');
                 }
             }
-        } else if (!is_callable($sortby) && !in_array($sortby, [self::SORT_ASC, self::SORT_DESC])) {
+        } else if (!$this->isValidSortValue($sortby)) {
             throw new \InvalidArgumentException('Sort parameter must be SORT_ASC, SORT_DESC, or a callable.');
         }
     }
@@ -581,8 +592,15 @@ class PHPivot
      * Compare a source value with a pattern
      * 
      * Note: This method uses fnmatch for pattern matching. When using with untrusted
-     * user input, be aware that certain patterns could be used maliciously.
-     * For numeric comparisons, direct comparison is used instead.
+     * user input, be cautious of:
+     * - Very long patterns (can cause performance issues)
+     * - Excessive wildcards like '***...***' (can cause backtracking)
+     * - Path traversal patterns like '../' (though fnmatch doesn't traverse filesystem)
+     * 
+     * For production use with untrusted input, consider:
+     * - Limiting pattern length (e.g., max 100 characters)
+     * - Restricting allowed wildcard characters
+     * - Using simple string comparison instead of patterns
      * 
      * @param mixed $source The source value to compare
      * @param mixed $pattern The pattern to match against
@@ -1086,7 +1104,7 @@ class PHPivot
 
     /**
      * Calculates the percentage out of sum given, sets the value (or appends)
-     * making the _val field "3 (23%)" or "23%"
+     * making the _val field "23%" or "3 (23%)"
      * 
      * @param array $d The data array to process
      * @param float|int $sum The sum to calculate percentage from
@@ -1095,7 +1113,7 @@ class PHPivot
     private function setAsPercOf(&$d, $sum, $keepValue = false)
     {
         if (!is_array($d)) return;
-        // Return early to avoid division by zero in percentage calculation
+        // Return early to avoid division by zero
         if ($sum == 0) return;
 
         if (array_key_exists('_val', $d)) {
@@ -1104,6 +1122,7 @@ class PHPivot
                 $actual_value = 0;
             }
 
+            // Calculate percentage - this is where division by zero would occur without the check above
             $d['_val'] = round($actual_value * 100 / $sum, $this->_decimal_precision);
 
             if ($keepValue) {
@@ -1186,7 +1205,7 @@ class PHPivot
 
                 break;
 
-            //@todo
+            // TODO: Re-implement DISPLAY_AS_PERC_DEEPEST_LEVEL feature
             case PHPivot::DISPLAY_AS_PERC_DEEPEST_LEVEL:
             case PHPivot::DISPLAY_AS_VALUE_AND_PERC_DEEPEST_LEVEL:
                 // Note: DISPLAY_AS_PERC_DEEPEST_LEVEL needs re-implementation. Displaying plain values.
