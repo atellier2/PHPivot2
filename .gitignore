@@ -1,2 +1,17 @@
 # Ignore bash scripts
 *.sh
+
+# Composer
+/vendor/
+composer.lock
+
+# IDE files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
