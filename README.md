@@ -28,8 +28,8 @@ use Atellier2\PHPivot\PHPivot;
 $filmsByActorAndGenre = PHPivot::create($data)
         ->setPivotRowFields('Actor')
         ->setPivotColumnFields('Genre')
-        ->setPivotValueFields('Genre', PHPivot::PIVOT_VALUE_COUNT, PHPivot::DISPLAY_AS_VALUE_AND_PERC_ROW, 'Frequency of Genre in each year')
-        ->addFilter('Genre', '', PHPivot::COMPARE_NOT_EQUAL) //Filter out blanks/unknown genre
+        ->setPivotValueFields('Genre', PivotConstants::PIVOT_VALUE_COUNT, PivotConstants::DISPLAY_AS_VALUE_AND_PERC_ROW, 'Frequency of Genre in each year')
+        ->addFilter('Genre', '', PivotConstants::COMPARE_NOT_EQUAL) //Filter out blanks/unknown genre
         ->generate();
 echo $filmsByActorAndGenre->toHtml();
 ```

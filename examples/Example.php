@@ -27,8 +27,8 @@
     echo '<a name="genre"></a><h1>Films by Genre</h1>';
     $filmsByGenre = PHPivot::create($data)
             ->setPivotRowFields('Genre')
-            ->setPivotValueFields('Genre',PHPivot::PIVOT_VALUE_COUNT, PHPivot::DISPLAY_AS_VALUE_AND_PERC_COL, 'Frequency of Genre')
-            ->addFilter('Genre','', PHPivot::COMPARE_NOT_EQUAL) //Filter out blanks/unknown genre
+            ->setPivotValueFields('Genre',PivotConstants::PIVOT_VALUE_COUNT, PivotConstants::DISPLAY_AS_VALUE_AND_PERC_COL, 'Frequency of Genre')
+            ->addFilter('Genre','', PivotConstants::COMPARE_NOT_EQUAL) //Filter out blanks/unknown genre
             ->generate();
     echo $filmsByGenre->toHtml();
 
@@ -36,16 +36,16 @@
     $filmsByActorAndGenre = PHPivot::create($data)
             ->setPivotRowFields('Actor')
             ->setPivotColumnFields('Genre')
-            ->setPivotValueFields('Genre',PHPivot::PIVOT_VALUE_COUNT, PHPivot::DISPLAY_AS_VALUE_AND_PERC_ROW, 'Frequency of Genre by Actor')
-            ->addFilter('Genre','', PHPivot::COMPARE_NOT_EQUAL) //Filter out blanks/unknown genre
+            ->setPivotValueFields('Genre',PivotConstants::PIVOT_VALUE_COUNT, PivotConstants::DISPLAY_AS_VALUE_AND_PERC_ROW, 'Frequency of Genre by Actor')
+            ->addFilter('Genre','', PivotConstants::COMPARE_NOT_EQUAL) //Filter out blanks/unknown genre
             ->generate();
     echo $filmsByActorAndGenre->toHtml();
 
     echo '<a name="actorYear"></a><h1>Films by Genre and Year</h1>';
     $filmsByGenreAndYear = PHPivot::create($data)
             ->setPivotRowFields(array('Year','Genre'))
-            ->setPivotValueFields('Genre',PHPivot::PIVOT_VALUE_COUNT, PHPivot::DISPLAY_AS_VALUE, 'Frequency of Genre in each year')
-            ->addFilter('Genre','', PHPivot::COMPARE_NOT_EQUAL) //Filter out blanks/unknown genre
+            ->setPivotValueFields('Genre',PivotConstants::PIVOT_VALUE_COUNT, PivotConstants::DISPLAY_AS_VALUE, 'Frequency of Genre in each year')
+            ->addFilter('Genre','', PivotConstants::COMPARE_NOT_EQUAL) //Filter out blanks/unknown genre
             ->setIgnoreBlankValues()
             ->generate();
 
