@@ -10,6 +10,8 @@
     <li><a href="#actorYear">Films by Genre and Year</a></li>
 </ul>
 <?php
+
+use Atellier2\PHPivot\Config\PivotConstants;
 	require __DIR__ . '/../vendor/autoload.php';
 	
 	use Atellier2\PHPivot\PHPivot;

@@ -4,6 +4,7 @@ namespace Atellier2\PHPivot\Tests\Unit;
 
 use Atellier2\PHPivot\PHPivot;
 use PHPUnit\Framework\TestCase;
+use Atellier2\PHPivot\Config\PivotConstants;
 
 /**
  * Test filtering functionality
@@ -33,8 +34,8 @@ class FilteringTest extends TestCase
     {
         $pivot = PHPivot::create($this->testData)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
-            ->addFilter('city', 'NYC', PHPivot::COMPARE_EQUAL)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
+            ->addFilter('city', 'NYC', PivotConstants::COMPARE_EQUAL)
             ->generate();
         
         $table = $pivot->getTable();
@@ -53,8 +54,8 @@ class FilteringTest extends TestCase
     {
         $pivot = PHPivot::create($this->testData)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
-            ->addFilter('city', 'NYC', PHPivot::COMPARE_NOT_EQUAL)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
+            ->addFilter('city', 'NYC', PivotConstants::COMPARE_NOT_EQUAL)
             ->generate();
         
         $table = $pivot->getTable();
@@ -73,8 +74,8 @@ class FilteringTest extends TestCase
     {
         $pivot = PHPivot::create($this->testData)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
-            ->addFilter('name', '', PHPivot::COMPARE_NOT_EQUAL)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
+            ->addFilter('name', '', PivotConstants::COMPARE_NOT_EQUAL)
             ->generate();
         
         $table = $pivot->getTable();
@@ -98,8 +99,8 @@ class FilteringTest extends TestCase
         
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
-            ->addFilter('name', 'John*', PHPivot::COMPARE_EQUAL)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
+            ->addFilter('name', 'John*', PivotConstants::COMPARE_EQUAL)
             ->generate();
         
         $table = $pivot->getTable();
@@ -123,8 +124,8 @@ class FilteringTest extends TestCase
         
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('code')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
-            ->addFilter('code', 'A?', PHPivot::COMPARE_EQUAL)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
+            ->addFilter('code', 'A?', PivotConstants::COMPARE_EQUAL)
             ->generate();
         
         $table = $pivot->getTable();
@@ -142,9 +143,9 @@ class FilteringTest extends TestCase
     {
         $pivot = PHPivot::create($this->testData)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
-            ->addFilter('city', 'NYC', PHPivot::COMPARE_EQUAL)
-            ->addFilter('name', 'John', PHPivot::COMPARE_EQUAL)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
+            ->addFilter('city', 'NYC', PivotConstants::COMPARE_EQUAL)
+            ->addFilter('name', 'John', PivotConstants::COMPARE_EQUAL)
             ->generate();
         
         $table = $pivot->getTable();
@@ -168,8 +169,8 @@ class FilteringTest extends TestCase
         
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
-            ->addFilter('tags', ['abc'], PHPivot::COMPARE_EQUAL, PHPivot::FILTER_MATCH_ALL)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
+            ->addFilter('tags', ['abc'], PivotConstants::COMPARE_EQUAL, PivotConstants::FILTER_MATCH_ALL)
             ->generate();
         
         $table = $pivot->getTable();
@@ -186,8 +187,8 @@ class FilteringTest extends TestCase
     {
         $pivot = PHPivot::create($this->testData)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
-            ->addFilter('city', ['NYC', 'LA'], PHPivot::COMPARE_EQUAL, PHPivot::FILTER_MATCH_ANY)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
+            ->addFilter('city', ['NYC', 'LA'], PivotConstants::COMPARE_EQUAL, PivotConstants::FILTER_MATCH_ANY)
             ->generate();
         
         $table = $pivot->getTable();
@@ -206,8 +207,8 @@ class FilteringTest extends TestCase
     {
         $pivot = PHPivot::create($this->testData)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
-            ->addFilter('city', ['NYC', 'LA'], PHPivot::COMPARE_EQUAL, PHPivot::FILTER_MATCH_NONE)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
+            ->addFilter('city', ['NYC', 'LA'], PivotConstants::COMPARE_EQUAL, PivotConstants::FILTER_MATCH_NONE)
             ->generate();
         
         $table = $pivot->getTable();
@@ -226,8 +227,8 @@ class FilteringTest extends TestCase
     {
         $pivot = PHPivot::create($this->testData)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
-            ->addFilter('age', 30, PHPivot::COMPARE_EQUAL)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
+            ->addFilter('age', 30, PivotConstants::COMPARE_EQUAL)
             ->generate();
         
         $table = $pivot->getTable();
@@ -248,8 +249,8 @@ class FilteringTest extends TestCase
         
         PHPivot::create($this->testData)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
-            ->addFilter('nonexistent', 'value', PHPivot::COMPARE_EQUAL)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
+            ->addFilter('nonexistent', 'value', PivotConstants::COMPARE_EQUAL)
             ->generate();
     }
     
@@ -260,9 +261,9 @@ class FilteringTest extends TestCase
     {
         $pivot = PHPivot::create($this->testData)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
-            ->addFilter('name', '', PHPivot::COMPARE_NOT_EQUAL)
-            ->addFilter('city', 'NYC', PHPivot::COMPARE_NOT_EQUAL)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
+            ->addFilter('name', '', PivotConstants::COMPARE_NOT_EQUAL)
+            ->addFilter('city', 'NYC', PivotConstants::COMPARE_NOT_EQUAL)
             ->generate();
         
         $table = $pivot->getTable();

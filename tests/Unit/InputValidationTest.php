@@ -4,6 +4,7 @@ namespace Atellier2\PHPivot\Tests\Unit;
 
 use Atellier2\PHPivot\PHPivot;
 use PHPUnit\Framework\TestCase;
+use Atellier2\PHPivot\Config\PivotConstants;
 
 /**
  * Test input validation and exception handling
@@ -56,7 +57,7 @@ class InputValidationTest extends TestCase
         $this->expectExceptionMessage('Invalid match mode');
         
         PHPivot::create($this->validData)
-            ->addFilter('name', 'John', PHPivot::COMPARE_EQUAL, 999);
+            ->addFilter('name', 'John', PivotConstants::COMPARE_EQUAL, 999);
     }
     
     /**
@@ -142,12 +143,12 @@ class InputValidationTest extends TestCase
     public function testSetSortColumnsAcceptsValidConstants()
     {
         $pivot = PHPivot::create($this->validData)
-            ->setSortColumns(PHPivot::SORT_ASC);
+            ->setSortColumns(PivotConstants::SORT_ASC);
         
         $this->assertInstanceOf(PHPivot::class, $pivot);
         
         $pivot = PHPivot::create($this->validData)
-            ->setSortColumns(PHPivot::SORT_DESC);
+            ->setSortColumns(PivotConstants::SORT_DESC);
         
         $this->assertInstanceOf(PHPivot::class, $pivot);
     }
@@ -171,7 +172,7 @@ class InputValidationTest extends TestCase
     public function testSetSortColumnsAcceptsArrayOfSortValues()
     {
         $pivot = PHPivot::create($this->validData)
-            ->setSortColumns([PHPivot::SORT_ASC, PHPivot::SORT_DESC]);
+            ->setSortColumns([PivotConstants::SORT_ASC, PivotConstants::SORT_DESC]);
         
         $this->assertInstanceOf(PHPivot::class, $pivot);
     }
@@ -185,7 +186,7 @@ class InputValidationTest extends TestCase
         $this->expectExceptionMessage('Invalid sort value in array');
         
         PHPivot::create($this->validData)
-            ->setSortColumns([PHPivot::SORT_ASC, 999]);
+            ->setSortColumns([PivotConstants::SORT_ASC, 999]);
     }
     
     /**
@@ -206,12 +207,12 @@ class InputValidationTest extends TestCase
     public function testSetSortRowsAcceptsValidConstants()
     {
         $pivot = PHPivot::create($this->validData)
-            ->setSortRows(PHPivot::SORT_ASC);
+            ->setSortRows(PivotConstants::SORT_ASC);
         
         $this->assertInstanceOf(PHPivot::class, $pivot);
         
         $pivot = PHPivot::create($this->validData)
-            ->setSortRows(PHPivot::SORT_DESC);
+            ->setSortRows(PivotConstants::SORT_DESC);
         
         $this->assertInstanceOf(PHPivot::class, $pivot);
     }

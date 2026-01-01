@@ -4,6 +4,7 @@ namespace Atellier2\PHPivot\Tests\Integration;
 
 use Atellier2\PHPivot\PHPivot;
 use PHPUnit\Framework\TestCase;
+use Atellier2\PHPivot\Config\PivotConstants;
 
 /**
  * Test edge cases and boundary conditions
@@ -23,7 +24,7 @@ class EdgeCasesTest extends TestCase
         
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $table = $pivot->getTable();
@@ -43,7 +44,7 @@ class EdgeCasesTest extends TestCase
         
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $table = $pivot->getTable();
@@ -63,7 +64,7 @@ class EdgeCasesTest extends TestCase
         
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $table = $pivot->getTable();
@@ -84,7 +85,7 @@ class EdgeCasesTest extends TestCase
         
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $table = $pivot->getTable();
@@ -105,7 +106,7 @@ class EdgeCasesTest extends TestCase
         
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $table = $pivot->getTable();
@@ -127,7 +128,7 @@ class EdgeCasesTest extends TestCase
         
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $table = $pivot->getTable();
@@ -147,7 +148,7 @@ class EdgeCasesTest extends TestCase
         
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name-with-dash')
-            ->setPivotValueFields('amount$', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('amount$', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $table = $pivot->getTable();
@@ -168,7 +169,7 @@ class EdgeCasesTest extends TestCase
         
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $table = $pivot->getTable();
@@ -189,7 +190,7 @@ class EdgeCasesTest extends TestCase
         
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $table = $pivot->getTable();
@@ -211,7 +212,7 @@ class EdgeCasesTest extends TestCase
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
             ->setPivotColumnFields('category')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM, PHPivot::DISPLAY_AS_PERC_ROW)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM, PivotConstants::DISPLAY_AS_PERC_ROW)
             ->generate();
         
         // Should not throw division by zero error
@@ -237,7 +238,7 @@ class EdgeCasesTest extends TestCase
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
             ->setPivotColumnFields('category')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $table = $pivot->getTable();
@@ -266,7 +267,7 @@ class EdgeCasesTest extends TestCase
         
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $table = $pivot->getTable();
@@ -293,7 +294,7 @@ class EdgeCasesTest extends TestCase
         
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('value', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('value', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $table = $pivot->getTable();

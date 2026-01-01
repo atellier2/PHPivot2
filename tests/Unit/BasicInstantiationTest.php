@@ -4,6 +4,7 @@ namespace Atellier2\PHPivot\Tests\Unit;
 
 use Atellier2\PHPivot\PHPivot;
 use PHPUnit\Framework\TestCase;
+use Atellier2\PHPivot\Config\PivotConstants;
 
 /**
  * Test basic instantiation and configuration of PHPivot
@@ -123,7 +124,7 @@ class BasicInstantiationTest extends TestCase
     {
         $data = [['name' => 'John', 'amount' => 100]];
         $pivot = PHPivot::create($data)
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM);
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM);
         
         $this->assertInstanceOf(PHPivot::class, $pivot);
     }
@@ -138,7 +139,7 @@ class BasicInstantiationTest extends TestCase
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
             ->setPivotColumnFields('age')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM);
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM);
         
         $this->assertInstanceOf(PHPivot::class, $pivot);
     }

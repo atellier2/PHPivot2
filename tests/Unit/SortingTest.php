@@ -4,6 +4,7 @@ namespace Atellier2\PHPivot\Tests\Unit;
 
 use Atellier2\PHPivot\PHPivot;
 use PHPUnit\Framework\TestCase;
+use Atellier2\PHPivot\Config\PivotConstants;
 
 /**
  * Test sorting functionality
@@ -26,8 +27,8 @@ class SortingTest extends TestCase
         
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
-            ->setSortRows(PHPivot::SORT_ASC)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
+            ->setSortRows(PivotConstants::SORT_ASC)
             ->generate();
         
         $table = $pivot->getTable();
@@ -59,8 +60,8 @@ class SortingTest extends TestCase
         
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
-            ->setSortRows(PHPivot::SORT_DESC)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
+            ->setSortRows(PivotConstants::SORT_DESC)
             ->generate();
         
         $table = $pivot->getTable();
@@ -95,8 +96,8 @@ class SortingTest extends TestCase
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
             ->setPivotColumnFields('year')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
-            ->setSortColumns(PHPivot::SORT_ASC)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
+            ->setSortColumns(PivotConstants::SORT_ASC)
             ->generate();
         
         // Get first row's columns
@@ -131,8 +132,8 @@ class SortingTest extends TestCase
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
             ->setPivotColumnFields('year')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
-            ->setSortColumns(PHPivot::SORT_DESC)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
+            ->setSortColumns(PivotConstants::SORT_DESC)
             ->generate();
         
         // Get first row's columns
@@ -195,8 +196,8 @@ class SortingTest extends TestCase
         
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('item')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
-            ->setSortRows(PHPivot::SORT_ASC)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
+            ->setSortRows(PivotConstants::SORT_ASC)
             ->generate();
         
         $table = $pivot->getTable();
@@ -229,8 +230,8 @@ class SortingTest extends TestCase
         
         $pivot = PHPivot::create($data)
             ->setPivotRowFields(['country', 'city'])
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
-            ->setSortRows([PHPivot::SORT_ASC, PHPivot::SORT_DESC])
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
+            ->setSortRows([PivotConstants::SORT_ASC, PivotConstants::SORT_DESC])
             ->generate();
         
         $table = $pivot->getTable();
@@ -260,7 +261,7 @@ class SortingTest extends TestCase
         
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $table = $pivot->getTable();

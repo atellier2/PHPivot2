@@ -4,6 +4,7 @@ namespace Atellier2\PHPivot\Tests\Unit;
 
 use Atellier2\PHPivot\PHPivot;
 use PHPUnit\Framework\TestCase;
+use Atellier2\PHPivot\Config\PivotConstants;
 
 /**
  * Test calculated columns functionality
@@ -27,7 +28,7 @@ class CalculatedColumnsTest extends TestCase
                 return $recordset[$rowID]['price'] * $recordset[$rowID]['quantity'];
             })
             ->setPivotRowFields('name')
-            ->setPivotValueFields('total', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('total', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $table = $pivot->getTable();
@@ -55,7 +56,7 @@ class CalculatedColumnsTest extends TestCase
                 ];
             })
             ->setPivotRowFields('name')
-            ->setPivotValueFields(['calc_doubled', 'calc_tripled'], PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields(['calc_doubled', 'calc_tripled'], PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $table = $pivot->getTable();
@@ -83,7 +84,7 @@ class CalculatedColumnsTest extends TestCase
                 return $recordset[$rowID]['amount'] * $extra;
             }, $multiplier)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('result', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('result', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $table = $pivot->getTable();
@@ -110,7 +111,7 @@ class CalculatedColumnsTest extends TestCase
                 [null, null]
             )
             ->setPivotRowFields('name')
-            ->setPivotValueFields(['doubled', 'squared'], PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields(['doubled', 'squared'], PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $table = $pivot->getTable();
@@ -134,9 +135,9 @@ class CalculatedColumnsTest extends TestCase
             ->addCalculatedColumns('age_group', function($rs, $id) {
                 return $rs[$id]['age'] >= 30 ? 'senior' : 'junior';
             })
-            ->addFilter('age_group', 'senior', PHPivot::COMPARE_EQUAL)
+            ->addFilter('age_group', 'senior', PivotConstants::COMPARE_EQUAL)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('age', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('age', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $table = $pivot->getTable();

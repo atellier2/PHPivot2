@@ -4,6 +4,7 @@ namespace Atellier2\PHPivot\Tests\Integration;
 
 use Atellier2\PHPivot\PHPivot;
 use PHPUnit\Framework\TestCase;
+use Atellier2\PHPivot\Config\PivotConstants;
 
 /**
  * Test HTML output generation
@@ -23,7 +24,7 @@ class HtmlOutputTest extends TestCase
         
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $html = $pivot->toHtml();
@@ -50,7 +51,7 @@ class HtmlOutputTest extends TestCase
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
             ->setPivotColumnFields('year')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $html = $pivot->toHtml();
@@ -73,7 +74,7 @@ class HtmlOutputTest extends TestCase
         
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name', 'Person Name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM, PHPivot::DISPLAY_AS_VALUE, 'Total Amount')
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM, PivotConstants::DISPLAY_AS_VALUE, 'Total Amount')
             ->generate();
         
         $html = $pivot->toHtml();
@@ -96,7 +97,7 @@ class HtmlOutputTest extends TestCase
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
             ->setPivotColumnFields('city')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $html = $pivot->toHtml();
@@ -172,7 +173,7 @@ class HtmlOutputTest extends TestCase
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
             ->setPivotColumnFields('category')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM, PHPivot::DISPLAY_AS_VALUE_AND_PERC_ROW)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM, PivotConstants::DISPLAY_AS_VALUE_AND_PERC_ROW)
             ->generate();
         
         $html = $pivot->toHtml();

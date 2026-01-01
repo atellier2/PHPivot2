@@ -4,6 +4,7 @@ namespace Atellier2\PHPivot\Tests\Unit;
 
 use Atellier2\PHPivot\PHPivot;
 use PHPUnit\Framework\TestCase;
+use Atellier2\PHPivot\Config\PivotConstants;
 
 /**
  * Test data formatting and display modes
@@ -25,7 +26,7 @@ class DataFormattingTest extends TestCase
         
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM, PHPivot::DISPLAY_AS_VALUE)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM, PivotConstants::DISPLAY_AS_VALUE)
             ->generate();
         
         $table = $pivot->getTable();
@@ -48,7 +49,7 @@ class DataFormattingTest extends TestCase
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
             ->setPivotColumnFields('category')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM, PHPivot::DISPLAY_AS_PERC_ROW)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM, PivotConstants::DISPLAY_AS_PERC_ROW)
             ->generate();
         
         $table = $pivot->getTable();
@@ -80,7 +81,7 @@ class DataFormattingTest extends TestCase
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
             ->setPivotColumnFields('category')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM, PHPivot::DISPLAY_AS_VALUE_AND_PERC_ROW)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM, PivotConstants::DISPLAY_AS_VALUE_AND_PERC_ROW)
             ->generate();
         
         $table = $pivot->getTable();
@@ -111,7 +112,7 @@ class DataFormattingTest extends TestCase
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
             ->setPivotColumnFields('category')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM, PHPivot::DISPLAY_AS_PERC_COL)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM, PivotConstants::DISPLAY_AS_PERC_COL)
             ->generate();
         
         $table = $pivot->getTable();
@@ -143,7 +144,7 @@ class DataFormattingTest extends TestCase
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
             ->setPivotColumnFields('category')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM, PHPivot::DISPLAY_AS_VALUE_AND_PERC_COL)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM, PivotConstants::DISPLAY_AS_VALUE_AND_PERC_COL)
             ->generate();
         
         $table = $pivot->getTable();
@@ -173,7 +174,7 @@ class DataFormattingTest extends TestCase
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
             ->setPivotColumnFields('category')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM, PHPivot::DISPLAY_AS_PERC_ROW)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM, PivotConstants::DISPLAY_AS_PERC_ROW)
             ->setDecimalPrecision(2)
             ->generate();
         
@@ -201,7 +202,7 @@ class DataFormattingTest extends TestCase
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
             ->setPivotColumnFields('category')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
             ->setIgnoreBlankValues()
             ->generate();
         
@@ -226,7 +227,7 @@ class DataFormattingTest extends TestCase
         // Test COUNT
         $pivotCount = PHPivot::create($data)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_COUNT)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_COUNT)
             ->generate();
         
         $tableCount = $pivotCount->getTable();
@@ -239,7 +240,7 @@ class DataFormattingTest extends TestCase
         // Test SUM
         $pivotSum = PHPivot::create($data)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $tableSum = $pivotSum->getTable();

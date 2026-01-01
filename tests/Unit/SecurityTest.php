@@ -4,6 +4,7 @@ namespace Atellier2\PHPivot\Tests\Unit;
 
 use Atellier2\PHPivot\PHPivot;
 use PHPUnit\Framework\TestCase;
+use Atellier2\PHPivot\Config\PivotConstants;
 
 /**
  * Test security features, particularly XSS prevention
@@ -24,7 +25,7 @@ class SecurityTest extends TestCase
         
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $html = $pivot->toHtml();
@@ -47,7 +48,7 @@ class SecurityTest extends TestCase
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
             ->setPivotColumnFields('category')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $html = $pivot->toHtml();
@@ -69,7 +70,7 @@ class SecurityTest extends TestCase
         
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $html = $pivot->toHtml();
@@ -89,7 +90,7 @@ class SecurityTest extends TestCase
         
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $html = $pivot->toHtml();
@@ -109,7 +110,7 @@ class SecurityTest extends TestCase
         
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $html = $pivot->toHtml();
@@ -135,7 +136,7 @@ class SecurityTest extends TestCase
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
             ->setPivotColumnFields('category')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $html = $pivot->toHtml();
@@ -159,7 +160,7 @@ class SecurityTest extends TestCase
         
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $html = $pivot->toHtml();
@@ -180,7 +181,7 @@ class SecurityTest extends TestCase
         
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $html = $pivot->toHtml();
@@ -201,7 +202,7 @@ class SecurityTest extends TestCase
         
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $html = $pivot->toHtml();
@@ -222,7 +223,7 @@ class SecurityTest extends TestCase
         
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name', '<script>alert(1)</script>')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $html = $pivot->toHtml();
@@ -245,7 +246,7 @@ class SecurityTest extends TestCase
         $pivot = PHPivot::create($data)
             ->setPivotRowFields('name')
             ->setPivotColumnFields('category')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM, PHPivot::DISPLAY_AS_VALUE, '<img src=x>')
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM, PivotConstants::DISPLAY_AS_VALUE, '<img src=x>')
             ->generate();
         
         $html = $pivot->toHtml();

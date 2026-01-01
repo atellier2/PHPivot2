@@ -4,6 +4,7 @@ namespace Atellier2\PHPivot\Tests\Integration;
 
 use Atellier2\PHPivot\PHPivot;
 use PHPUnit\Framework\TestCase;
+use Atellier2\PHPivot\Config\PivotConstants;
 
 /**
  * Test complete pivot table generation with real-world scenarios
@@ -29,7 +30,7 @@ class PivotGenerationTest extends TestCase
     {
         $pivot = PHPivot::create($this->testData)
             ->setPivotRowFields('Genre')
-            ->setPivotValueFields('Genre', PHPivot::PIVOT_VALUE_COUNT)
+            ->setPivotValueFields('Genre', PivotConstants::PIVOT_VALUE_COUNT)
             ->generate();
         
         $table = $pivot->getTable();
@@ -54,7 +55,7 @@ class PivotGenerationTest extends TestCase
     {
         $pivot = PHPivot::create($this->testData)
             ->setPivotRowFields('Actor')
-            ->setPivotValueFields('Revenue', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('Revenue', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $table = $pivot->getTable();
@@ -75,7 +76,7 @@ class PivotGenerationTest extends TestCase
         $pivot = PHPivot::create($this->testData)
             ->setPivotRowFields('Actor')
             ->setPivotColumnFields('Genre')
-            ->setPivotValueFields('Revenue', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('Revenue', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $table = $pivot->getTable();
@@ -98,7 +99,7 @@ class PivotGenerationTest extends TestCase
     {
         $pivot = PHPivot::create($this->testData)
             ->setPivotRowFields(['Year', 'Genre'])
-            ->setPivotValueFields('Revenue', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('Revenue', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $table = $pivot->getTable();
@@ -121,8 +122,8 @@ class PivotGenerationTest extends TestCase
     {
         $pivot = PHPivot::create($this->testData)
             ->setPivotRowFields('Year')
-            ->setPivotValueFields('Revenue', PHPivot::PIVOT_VALUE_SUM)
-            ->addFilter('Genre', 'Action', PHPivot::COMPARE_EQUAL)
+            ->setPivotValueFields('Revenue', PivotConstants::PIVOT_VALUE_SUM)
+            ->addFilter('Genre', 'Action', PivotConstants::COMPARE_EQUAL)
             ->generate();
         
         $table = $pivot->getTable();
@@ -144,7 +145,7 @@ class PivotGenerationTest extends TestCase
     {
         $pivot = PHPivot::create($this->testData)
             ->setPivotRowFields('Genre')
-            ->setPivotValueFields('Revenue', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('Revenue', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $html = $pivot->toHtml();
@@ -167,7 +168,7 @@ class PivotGenerationTest extends TestCase
     {
         $pivot = PHPivot::create($this->testData)
             ->setPivotRowFields('Genre')
-            ->setPivotValueFields('Revenue', PHPivot::PIVOT_VALUE_SUM)
+            ->setPivotValueFields('Revenue', PivotConstants::PIVOT_VALUE_SUM)
             ->generate();
         
         $array = $pivot->toArray();
@@ -186,7 +187,7 @@ class PivotGenerationTest extends TestCase
     {
         $pivot = PHPivot::create([])
             ->setPivotRowFields('name')
-            ->setPivotValueFields('amount', PHPivot::PIVOT_VALUE_SUM);
+            ->setPivotValueFields('amount', PivotConstants::PIVOT_VALUE_SUM);
         
         $result = $pivot->generate();
         
@@ -207,10 +208,10 @@ class PivotGenerationTest extends TestCase
         $pivot = PHPivot::create($this->testData)
             ->setPivotRowFields(['Year', 'Actor'])
             ->setPivotColumnFields('Genre')
-            ->setPivotValueFields('Revenue', PHPivot::PIVOT_VALUE_SUM, PHPivot::DISPLAY_AS_VALUE)
-            ->addFilter('Revenue', '100', PHPivot::COMPARE_NOT_EQUAL)  // Filter out 100
-            ->setSortRows(PHPivot::SORT_ASC)
-            ->setSortColumns(PHPivot::SORT_ASC)
+            ->setPivotValueFields('Revenue', PivotConstants::PIVOT_VALUE_SUM, PivotConstants::DISPLAY_AS_VALUE)
+            ->addFilter('Revenue', '100', PivotConstants::COMPARE_NOT_EQUAL)  // Filter out 100
+            ->setSortRows(PivotConstants::SORT_ASC)
+            ->setSortColumns(PivotConstants::SORT_ASC)
             ->generate();
         
         $table = $pivot->getTable();
