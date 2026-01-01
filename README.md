@@ -1,12 +1,45 @@
 # PHPivot
 A flexible Pivot Table library for PHP.
 
-#Example01
-- Using the film dataset from: https://perso.telecom-paristech.fr/~eagan/class/igr204/datasets
-- Go to [Example01/Example.php](Example01/Example.php) to see how the library is used
-- See the output of Example.php [here](https://htmlpreview.github.io/?https://github.com/mhadjimichael/PHPivot/blob/master/Example01/Example.php.html)
+## Installation
 
-#Supported Features:
+### Via Composer (recommended)
+
+```bash
+composer require atellier2/phpivot2
+```
+
+### Manual Installation
+
+Clone this repository and run:
+```bash
+composer install
+```
+
+## Usage
+
+```php
+<?php
+require 'vendor/autoload.php';
+
+use Atellier2\PHPivot\PHPivot;
+
+// @table: an associative array containing rows of columns (like JSON)
+$filmsByActorAndGenre = PHPivot::create($data)
+        ->setPivotRowFields('Actor')
+        ->setPivotColumnFields('Genre')
+        ->setPivotValueFields('Genre', PHPivot::PIVOT_VALUE_COUNT, PHPivot::DISPLAY_AS_VALUE_AND_PERC_ROW, 'Frequency of Genre in each year')
+        ->addFilter('Genre', '', PHPivot::COMPARE_NOT_EQUAL) //Filter out blanks/unknown genre
+        ->generate();
+echo $filmsByActorAndGenre->toHtml();
+```
+
+## Examples
+- Using the film dataset from: https://perso.telecom-paristech.fr/~eagan/class/igr204/datasets
+- Go to [examples/Example.php](examples/Example.php) to see how the library is used
+- See the output of Example.php [here](https://htmlpreview.github.io/?https://github.com/mhadjimichael/PHPivot/blob/master/examples/Example.php.html)
+
+## Supported Features:
 - Nested (infinite) rows and columns
 - Sum and Count Functions
 - Generate HTML Table
@@ -30,24 +63,8 @@ A flexible Pivot Table library for PHP.
     - Actual Values
     - Percentage of col/row
 
-#Features that need migration to the latest version/TODOs
+## Features that need migration to the latest version/TODOs
 - Display as: -Percentage of deepest level (@fix)
 - Color Coding (background) of data: (@fix)
     - Low->High/High->Low gradient
-- "Pivot Comparison" mechanism 
-
-#Usage example:
-```php
-require 'PHPivot.php';
-
-//@table: an associative array containing rows of columns (like JSON)
-function printPivotHTML(){
-    $filmsByActorAndGenre = PHPivot::create($data)
-            ->setPivotRowFields('Actor')
-            ->setPivotColumnFields('Genre')
-            ->setPivotValueFields('Genre',PHPivot::PIVOT_VALUE_COUNT, PHPivot::DISPLAY_AS_VALUE_AND_PERC_ROW, 'Frequency of Genre in each year')
-            ->addFilter('Genre','', PHPivot::COMPARE_NOT_EQUAL) //Filter out blanks/unknown genre
-            ->generate();
-    echo $filmsByActorAndGenre->toHtml();
-}
-```
+- "Pivot Comparison" mechanism
