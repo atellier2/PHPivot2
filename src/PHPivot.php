@@ -7,49 +7,6 @@ use Atellier2\PHPivot\Service\Filter\FilterInterface;
 use Atellier2\PHPivot\Service\Filter\ComparisonFilter;
 use Atellier2\PHPivot\Service\Filter\CustomFilter;
 
-//PHPivot
-// https://github.com/mhadjimichael/PHPivot?tab=readme-ov-file/
-/*Supported Features:
-    -Can Import "Prepared" 2D Array/Table
-    -Nested (infinite) rows and columns
-    -Sum and Count Functions
-    -Generate HTML Table
-        -Ignore empty rows [ setIgnoreBlankValues ]
-    -Filters (Equal, Not Equal)
-        -Filters support UNIX Wildcards (shell patterns), like *, ?, [ae], etc.
-            (see php.net/fnmatch )
-        -Support for Multiple Values matched as ALL(AND)/OR(ANY)/NONE(NOR) (MATCH_ALL, MATCH_NONE, MATCH_ANY)
-        -@redo: Additional User-Defined functions as Filters
-            -addCustomFilter( user_defined_filter_function, $extra_params = null )
-                -@user_defined_filter_function($recordset, $rowID, $extra_params = null) -> returns true whenever a row should be INCLUDED.
-        -User-defined "filters" can be setup using calculated columns and regular filters!
-    -Calculated Columns
-        -User defined functions.
-            -They can return an array with "key-value" pairs, resulting in multiple calculated columns,
-                named as CALC_COL_NAME_KEY
-    -Sorting(Ascending by default, Descending, User defined functions)
-        -Different Row and Column Sorting methods
-        -Can give array argument for multiple level/different sorting
-        -User-defined sorting functions
-            -@user-defined-sorting-function($a,$b) -> should return $a < $b
-    -Display as:
-        -Actual Values
-        -Percentage of deepest level
-    -Color Coding (background) of data:
-        -Low->High/High->Low gradient
-        @todo:-Comparisons
-        @todo:-Color Max (extra color)
-        @todo:-Color Min (extra color)
-        @todo:-Color average (extra color)
-        @todo:-Conditional (Value comparison)+pass function
-
-
-  @todo
-  -Make sure % sums up to exactly 100%
-    -http://stackoverflow.com/questions/13483430/how-to-make-rounded-percentages-add-up-to-100
-
-*/
-
 
 class PHPivot
 {
@@ -69,11 +26,25 @@ class PHPivot
     protected $_columns_sort = PivotConstants::SORT_ASC;
     protected $_rows = array();
     protected $_rows_titles = array();
+
     /* array of booleans indicating whether to show sum for each row level */
     protected $_rows_sum = array(); 
+
+    /**
+     * @var int|array|callable Sort order for rows (SORT_ASC, SORT_DESC, or callable)
+     * 
+     * @see setSortRows()
+     */
     protected $_rows_sort = PivotConstants::SORT_ASC;
+
+    /**
+     * @var bool Whether to ignore blank values in the pivot table
+     */
     protected $_ignore_blanks = false;
 
+    /**
+     * @var int Color coding mode (e.g., COLOR_ALL, COLOR_ROWS, COLOR_COLUMNS)
+     */
     protected $_color_by = PivotConstants::COLOR_ALL;
     protected $_color_low = null;
     protected $_color_high = null;

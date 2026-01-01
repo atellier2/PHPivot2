@@ -8,7 +8,7 @@ final class CustomFilter implements FilterInterface
      * @param callable $filterFn function(array $row, mixed $extraParams): bool
      */
     public function __construct(
-        private readonly $filterFn,
+        private readonly mixed $filterFn,
         private readonly mixed $extraParams = null
     ) {}
 

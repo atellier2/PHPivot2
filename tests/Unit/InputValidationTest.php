@@ -270,17 +270,17 @@ class InputValidationTest extends TestCase
     public function testSetColorRangeAcceptsValidColorByConstants()
     {
         $pivot = PHPivot::create($this->validData)
-            ->setColorRange('#00ff00', '#ff0000', PHPivot::COLOR_ALL);
+            ->setColorRange('#00ff00', '#ff0000', PivotConstants::COLOR_ALL);
         
         $this->assertInstanceOf(PHPivot::class, $pivot);
         
         $pivot = PHPivot::create($this->validData)
-            ->setColorRange('#00ff00', '#ff0000', PHPivot::COLOR_BY_ROW);
+            ->setColorRange('#00ff00', '#ff0000', PivotConstants::COLOR_BY_ROW);
         
         $this->assertInstanceOf(PHPivot::class, $pivot);
         
         $pivot = PHPivot::create($this->validData)
-            ->setColorRange('#00ff00', '#ff0000', PHPivot::COLOR_BY_COL);
+            ->setColorRange('#00ff00', '#ff0000', PivotConstants::COLOR_BY_COL);
         
         $this->assertInstanceOf(PHPivot::class, $pivot);
     }
