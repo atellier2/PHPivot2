@@ -434,13 +434,12 @@ class PHPivot
     }
 
     /**
-     * Set the sorting order for columns
+     * Validate sort parameter
      * 
-     * @param int|array|callable $sortby Sort order (SORT_ASC, SORT_DESC) or array of sort orders or callable
-     * @return $this
+     * @param int|array|callable $sortby The sort parameter to validate
      * @throws \InvalidArgumentException if sort parameter is invalid
      */
-    public function setSortColumns($sortby)
+    private function validateSortParameter($sortby)
     {
         if (is_array($sortby)) {
             foreach ($sortby as $sort) {
@@ -451,9 +450,19 @@ class PHPivot
         } else if (!is_callable($sortby) && !in_array($sortby, [self::SORT_ASC, self::SORT_DESC])) {
             throw new \InvalidArgumentException('Sort parameter must be SORT_ASC, SORT_DESC, or a callable.');
         }
-        
-        $this->_columns_sort = $sortby;
+    }
 
+    /**
+     * Set the sorting order for columns
+     * 
+     * @param int|array|callable $sortby Sort order (SORT_ASC, SORT_DESC) or array of sort orders or callable
+     * @return $this
+     * @throws \InvalidArgumentException if sort parameter is invalid
+     */
+    public function setSortColumns($sortby)
+    {
+        $this->validateSortParameter($sortby);
+        $this->_columns_sort = $sortby;
         return $this;
     }
 
@@ -466,18 +475,8 @@ class PHPivot
      */
     public function setSortRows($sortby)
     {
-        if (is_array($sortby)) {
-            foreach ($sortby as $sort) {
-                if (!is_callable($sort) && !in_array($sort, [self::SORT_ASC, self::SORT_DESC])) {
-                    throw new \InvalidArgumentException('Invalid sort value in array.');
-                }
-            }
-        } else if (!is_callable($sortby) && !in_array($sortby, [self::SORT_ASC, self::SORT_DESC])) {
-            throw new \InvalidArgumentException('Sort parameter must be SORT_ASC, SORT_DESC, or a callable.');
-        }
-        
+        $this->validateSortParameter($sortby);
         $this->_rows_sort = $sortby;
-
         return $this;
     }
 
@@ -581,6 +580,10 @@ class PHPivot
     /**
      * Compare a source value with a pattern
      * 
+     * Note: This method uses fnmatch for pattern matching. When using with untrusted
+     * user input, be aware that certain patterns could be used maliciously.
+     * For numeric comparisons, direct comparison is used instead.
+     * 
      * @param mixed $source The source value to compare
      * @param mixed $pattern The pattern to match against
      * @return int 0 if match, -2 if no match
@@ -592,8 +595,8 @@ class PHPivot
             return ($source == $pattern ? 0 : -2);
         }
         
-        // String comparison with fnmatch (safe for pattern matching)
-        // Note: fnmatch is filesystem-based pattern matching and is safe when used with data
+        // For string comparison, use fnmatch for pattern matching
+        // Note: fnmatch uses filesystem-style wildcards (*, ?, [])
         return (fnmatch((string)$pattern, (string)$source) ? 0 : -2);
     }
 
@@ -1092,7 +1095,8 @@ class PHPivot
     private function setAsPercOf(&$d, $sum, $keepValue = false)
     {
         if (!is_array($d)) return;
-        if ($sum == 0) return; // Avoid division by zero
+        // Return early to avoid division by zero in percentage calculation
+        if ($sum == 0) return;
 
         if (array_key_exists('_val', $d)) {
             $actual_value = $d['_val'];
@@ -1324,7 +1328,8 @@ class PHPivot
     protected function getDataValue($row)
     {
         if (is_array($row) && (isset($row['_val']) || strcmp($row['_val'], '') == 0)) return $row['_val'];
-        throw new \RuntimeException('PHPivot: Cannot find ["_val"] in data row: ' . print_r($row, true));
+        // Don't expose potentially sensitive data structure details in exception
+        throw new \RuntimeException('PHPivot: Cannot find ["_val"] in data row (invalid data structure)');
     }
 
     //Figures out where the actual value is and produces html code
