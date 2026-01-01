@@ -1,0 +1,38 @@
+[
+    {
+        "Year": "2015",
+        "Genre": "Action",
+        "Actor": "Tom Cruise",
+        "Revenue": "150"
+    },
+    {
+        "Year": "2015",
+        "Genre": "Comedy",
+        "Actor": "Jim Carrey",
+        "Revenue": "80"
+    },
+    {
+        "Year": "2016",
+        "Genre": "Action",
+        "Actor": "Tom Cruise",
+        "Revenue": "200"
+    },
+    {
+        "Year": "2016",
+        "Genre": "Drama",
+        "Actor": "Brad Pitt",
+        "Revenue": "120"
+    },
+    {
+        "Year": "2016",
+        "Genre": "Comedy",
+        "Actor": "Jim Carrey",
+        "Revenue": "90"
+    },
+    {
+        "Year": "2017",
+        "Genre": "Action",
+        "Actor": "Brad Pitt",
+        "Revenue": "180"
+    }
+]

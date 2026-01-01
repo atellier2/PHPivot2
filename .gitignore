@@ -15,3 +15,6 @@ composer.lock
 .DS_Store
 Thumbs.db
 
+# PHPUnit
+.phpunit.result.cache
+/coverage/
