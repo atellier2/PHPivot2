@@ -5,6 +5,7 @@ namespace Atellier2\PHPivot\Tests\Unit;
 use Atellier2\PHPivot\PHPivot;
 use PHPUnit\Framework\TestCase;
 use Atellier2\PHPivot\Config\PivotConstants;
+use Atellier2\PHPivot\Exception\PHPivotException;
 
 /**
  * Test input validation and exception handling
@@ -29,8 +30,8 @@ class InputValidationTest extends TestCase
      */
     public function testAddFilterThrowsExceptionForEmptyColumn()
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Filter column must be a non-empty string');
+        $this->expectException(PHPivotException::class);
+        $this->expectExceptionMessage(__('error.invalid_filter_column'));
         
         PHPivot::create($this->validData)
             ->addFilter('', 'value');
@@ -41,8 +42,8 @@ class InputValidationTest extends TestCase
      */
     public function testAddFilterThrowsExceptionForInvalidCompareOperator()
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid compare operator');
+        $this->expectException(PHPivotException::class);
+        $this->expectExceptionMessage(__('error.invalid_compare_operator'));
         
         PHPivot::create($this->validData)
             ->addFilter('name', 'John', 999);
@@ -53,8 +54,8 @@ class InputValidationTest extends TestCase
      */
     public function testAddFilterThrowsExceptionForInvalidMatchMode()
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid match mode');
+        $this->expectException(PHPivotException::class);
+        $this->expectExceptionMessage(__('error.invalid_match_mode'));
         
         PHPivot::create($this->validData)
             ->addFilter('name', 'John', PivotConstants::COMPARE_EQUAL, 999);
@@ -65,8 +66,8 @@ class InputValidationTest extends TestCase
      */
     public function testAddCustomFilterThrowsExceptionForNonCallable()
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Filter function must be callable');
+        $this->expectException(PHPivotException::class);
+        $this->expectExceptionMessage(__('error.invalid_filter_function'));
         
         PHPivot::create($this->validData)
             ->addCustomFilter('not_a_function');
@@ -90,8 +91,8 @@ class InputValidationTest extends TestCase
      */
     public function testAddCalculatedColumnsThrowsExceptionForNonCallable()
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('is not callable');
+        $this->expectException(PHPivotException::class);
+        $this->expectExceptionMessage(__(__('error.invalid_calculated_column', ['function' => 'not_a_function'])));
         
         PHPivot::create($this->validData)
             ->addCalculatedColumns('new_col', 'not_a_function');
@@ -115,8 +116,8 @@ class InputValidationTest extends TestCase
      */
     public function testAddCalculatedColumnsThrowsExceptionForMismatchedArrays()
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('column name and function count mismatch');
+        $this->expectException(PHPivotException::class);
+        $this->expectExceptionMessage(__('error.column_function_mismatch'));
         
         PHPivot::create($this->validData)
             ->addCalculatedColumns(
@@ -130,8 +131,8 @@ class InputValidationTest extends TestCase
      */
     public function testSetSortColumnsThrowsExceptionForInvalidSort()
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Sort parameter must be SORT_ASC, SORT_DESC, or a callable');
+        $this->expectException(PHPivotException::class);
+        $this->expectExceptionMessage(__('error.invalid_sort_parameter'));
         
         PHPivot::create($this->validData)
             ->setSortColumns(999);
@@ -182,8 +183,8 @@ class InputValidationTest extends TestCase
      */
     public function testSetSortColumnsThrowsExceptionForInvalidArrayElement()
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid sort value in array');
+        $this->expectException(PHPivotException::class);
+        $this->expectExceptionMessage(__('error.invalid_sort_parameter'));
         
         PHPivot::create($this->validData)
             ->setSortColumns([PivotConstants::SORT_ASC, 999]);
@@ -194,8 +195,8 @@ class InputValidationTest extends TestCase
      */
     public function testSetSortRowsThrowsExceptionForInvalidSort()
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Sort parameter must be SORT_ASC, SORT_DESC, or a callable');
+        $this->expectException(PHPivotException::class);
+        $this->expectExceptionMessage(__('error.invalid_sort_parameter'));
         
         PHPivot::create($this->validData)
             ->setSortRows(999);
@@ -222,8 +223,8 @@ class InputValidationTest extends TestCase
      */
     public function testSetColorRangeThrowsExceptionForInvalidLowColor()
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Low color must be in hex format #RRGGBB');
+        $this->expectException(PHPivotException::class);
+        $this->expectExceptionMessage(__('error.invalid_color_format', ['%color%' => 'Low']));
         
         PHPivot::create($this->validData)
             ->setColorRange('red', '#ff0000');
@@ -234,8 +235,8 @@ class InputValidationTest extends TestCase
      */
     public function testSetColorRangeThrowsExceptionForInvalidHighColor()
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('High color must be in hex format #RRGGBB');
+        $this->expectException(PHPivotException::class);
+        $this->expectExceptionMessage(__('error.invalid_color_format', ['%color%' => 'High']));
         
         PHPivot::create($this->validData)
             ->setColorRange('#00ff00', 'blue');
@@ -257,8 +258,8 @@ class InputValidationTest extends TestCase
      */
     public function testSetColorRangeThrowsExceptionForInvalidColorBy()
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid colorBy parameter');
+        $this->expectException(PHPivotException::class);
+        $this->expectExceptionMessage(__('error.invalid_color_by'));
         
         PHPivot::create($this->validData)
             ->setColorRange('#00ff00', '#ff0000', 999);

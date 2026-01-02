@@ -124,12 +124,12 @@ class PHPivot
      * Constructor
      * 
      * @param array $recordset The data recordset
-     * @throws \InvalidArgumentException if recordset is not an array
+     * @throws PHPivotException if recordset is not an array
      */
     public function __construct($recordset)
     {
         if (!is_array($recordset)) {
-            throw new \InvalidArgumentException('Recordset must be an array.');
+            throw new PHPivotException(__('error.invalid_recordset'));
         }
         $this->_recordset = $recordset;
     }
@@ -184,7 +184,7 @@ class PHPivot
                 $fn = $functions[0];
                 $functions = array_fill(0, count($values), $fn);
             } else {
-                throw new PHPivotException('Value Fields and Function Count do not match.', PHPivotException::INVALID_CONFIGURATION);
+                throw new PHPivotException(__('error.value_function_count_mismatch'), PHPivotException::INVALID_CONFIGURATION);
             }
         }
         if (!is_null($titles) && !is_array($titles)) {
@@ -256,12 +256,12 @@ class PHPivot
      * 
      * @param int $precision The number of decimal places (must be >= 0)
      * @return $this
-     * @throws \InvalidArgumentException if precision is negative
+     * @throws PHPivotException if precision is negative
      */
     public function setDecimalPrecision($precision)
     {
         if (!is_int($precision) || $precision < 0) {
-            throw new \InvalidArgumentException('Decimal precision must be a non-negative integer.');
+            throw new PHPivotException(__('error.invalid_precision'));
         }
 
         $this->_decimal_precision = $precision;
@@ -276,16 +276,16 @@ class PHPivot
      * @param string $high High value color (hex format #RRGGBB)
      * @param int|null $colorBy How to apply colors (COLOR_ALL, COLOR_BY_ROW, COLOR_BY_COL)
      * @return $this
-     * @throws \InvalidArgumentException if color format is invalid
+     * @throws PHPivotException if color format is invalid
      */
     public function setColorRange($low = '#00af5d', $high = '#ff0017', $colorBy = null)
     {
         // Validate hex color format
         if (!ColorUtils::isValidHexColor($low)) {
-            throw new \InvalidArgumentException('Low color must be in hex format #RRGGBB');
+            throw new PHPivotException(__('error.invalid_color_format',['%color%' => 'low']));
         }
         if (!ColorUtils::isValidHexColor($high)) {
-            throw new \InvalidArgumentException('High color must be in hex format #RRGGBB');
+            throw new PHPivotException(__('error.invalid_color_format',['%color%' => 'high']));
         }
 
         if (is_null($colorBy)) {
@@ -293,7 +293,7 @@ class PHPivot
         }
 
         if (!in_array($colorBy, [PivotConstants::COLOR_ALL, PivotConstants::COLOR_BY_ROW, PivotConstants::COLOR_BY_COL], true)) {
-            throw new \InvalidArgumentException('Invalid colorBy parameter.');
+            throw new PHPivotException(__('error.invalid_color_by'));
         }
 
         $this->_color_by = $colorBy;
@@ -358,18 +358,18 @@ class PHPivot
      * Validate sort parameter
      * 
      * @param int|array|callable $sortby The sort parameter to validate
-     * @throws \InvalidArgumentException if sort parameter is invalid
+     * @throws PHPivotException if sort parameter is invalid
      */
     private function validateSortParameter($sortby)
     {
         if (is_array($sortby)) {
             foreach ($sortby as $sort) {
                 if (!$this->isValidSortValue($sort)) {
-                    throw new \InvalidArgumentException('Invalid sort value in array.');
+                    throw new PHPivotException(__('error.invalid_sort_parameter'));
                 }
             }
         } else if (!$this->isValidSortValue($sortby)) {
-            throw new \InvalidArgumentException('Sort parameter must be SORT_ASC, SORT_DESC, or a callable.');
+            throw new PHPivotException(__('error.invalid_sort_parameter'));
         }
     }
 
@@ -378,7 +378,7 @@ class PHPivot
      * 
      * @param int|array|callable $sortby Sort order (SORT_ASC, SORT_DESC) or array of sort orders or callable
      * @return $this
-     * @throws \InvalidArgumentException if sort parameter is invalid
+     * @throws PHPivotException if sort parameter is invalid
      */
     public function setSortColumns($sortby)
     {
@@ -392,7 +392,7 @@ class PHPivot
      * 
      * @param int|array|callable $sortby Sort order (SORT_ASC, SORT_DESC) or array of sort orders or callable
      * @return $this
-     * @throws \InvalidArgumentException if sort parameter is invalid
+     * @throws PHPivotException if sort parameter is invalid
      */
     public function setSortRows($sortby)
     {
@@ -419,14 +419,14 @@ class PHPivot
             $calc_function = array($calc_function);
             $extra_params = array_fill(0, 1, $extra_params);
         } else if (count($col_name) != count($calc_function)) {
-            throw new \InvalidArgumentException('addCalculatedColumns: column name and function count mismatch.');
+            throw new PHPivotException(__('error.column_function_mismatch'));
         }
         for ($i = 0; $i < count($col_name); $i++) {
             $calc_col = array();
             $calc_col['name'] = $col_name[$i];
 
             if (!is_callable($calc_function[$i])) {
-                throw new \InvalidArgumentException('Calculated Column function ' . $calc_function[$i] . ' is not callable.');
+                throw new PHPivotException(__('error.invalid_calculated_column', ['function' => $calc_function[$i]]));
             }
 
             $calc_col['function'] = $calc_function[$i];
@@ -444,7 +444,7 @@ class PHPivot
      * @param int $compare Comparison operator (COMPARE_EQUAL or COMPARE_NOT_EQUAL)
      * @param int $match Match mode (FILTER_MATCH_ALL, FILTER_MATCH_ANY, or FILTER_MATCH_NONE)
      * @return $this
-     * @throws \InvalidArgumentException if parameters are invalid
+     * @throws PHPivotException if parameters are invalid
      */
     public function addFilter($column, $value, $compare = PivotConstants::COMPARE_EQUAL, $match = PivotConstants::FILTER_MATCH_ALL)
     {
@@ -462,7 +462,7 @@ class PHPivot
      * @param callable $filterFn The filter function
      * @param mixed $extra_params Extra parameters to pass to the function (optional)
      * @return $this
-     * @throws \InvalidArgumentException if the function is not callable
+     * @throws PHPivotException if the function is not callable
      */
     public function addCustomFilter($filterFn, $extra_params = null)
     {
@@ -475,7 +475,7 @@ class PHPivot
     {
         foreach ($this->_filters as $filter) {
             if (!$filter instanceof FilterInterface) {
-                throw new PHPivotException('Invalid filter, must implement FilterInterface', PHPivotException::INVALID_CONFIGURATION);
+                throw new PHPivotException(__('error.invalid_filter'), PHPivotException::INVALID_CONFIGURATION);
             }
             if (!$filter->matches($rs_row)) {
                 return false;
@@ -664,7 +664,7 @@ class PHPivot
                             break;
 
                         default:
-                            throw new PHPivotException('Value function not recognized: ' . $value_function, PHPivotException::INVALID_CONFIGURATION);
+                            throw new PHPivotException(__('error.invalid_value_function', ['function' => $value_function]), PHPivotException::INVALID_CONFIGURATION);
                             break;
                     }
                 }
@@ -763,7 +763,7 @@ class PHPivot
                     return 'inherit';
                 break;
             default:
-                throw new PHPivotException('getColorOf not programmed to handle COLOR_BY=' . $this->_color_by, PHPivotException::INVALID_CONFIGURATION);
+                throw new PHPivotException(__('error.invalid_getcolor', ['color' => $this->_color_by]), PHPivotException::INVALID_CONFIGURATION);
                 break;
         }
     }
@@ -805,14 +805,14 @@ class PHPivot
                 break;
             case PivotConstants::COLOR_BY_ROW:
                 //@todo
-                throw new PHPivotException('PHPivot: COLOR_BY_ROW not yet implemented.', PHPivotException::INVALID_CONFIGURATION);
+                throw new PHPivotException(__('error.color_not_implemented', ['mode' => PivotConstants::COLOR_BY_ROW]), PHPivotException::INVALID_CONFIGURATION);
                 break;
             case PivotConstants::COLOR_BY_COL:
                 //@todo
-                throw new PHPivotException('PHPivot: COLOR_BY_COL not yet implemented.', PHPivotException::INVALID_CONFIGURATION);
+                throw new PHPivotException(__('error.color_not_implemented', ['mode' => PivotConstants::COLOR_BY_COL]), PHPivotException::INVALID_CONFIGURATION);
                 break;
             default:
-                throw new PHPivotException('PHPivot: Cannot color data by ' . $this->_color_by, PHPivotException::INVALID_CONFIGURATION);
+                throw new PHPivotException(__('error.color_not_implemented', ['mode' => $this->_color_by]), PHPivotException::INVALID_CONFIGURATION);
                 break;
         }
     }

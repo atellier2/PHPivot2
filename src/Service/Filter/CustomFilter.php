@@ -2,6 +2,8 @@
 
 namespace Atellier2\PHPivot\Service\Filter;
 
+use Atellier2\PHPivot\Exception\PHPivotException;
+
 final class CustomFilter implements FilterInterface
 {
     /**
@@ -12,7 +14,7 @@ final class CustomFilter implements FilterInterface
         private readonly mixed $extraParams = null
     ) {
         if (!is_callable($this->filterFn)) {
-            throw new \InvalidArgumentException('Filter function must be callable');
+            throw new PHPivotException(__('error.invalid_filter_function'));
         }
     }
 

@@ -5,6 +5,7 @@ namespace Atellier2\PHPivot\Tests\Unit;
 use Atellier2\PHPivot\PHPivot;
 use PHPUnit\Framework\TestCase;
 use Atellier2\PHPivot\Config\PivotConstants;
+use Atellier2\PHPivot\Exception\PHPivotException;
 
 /**
  * Test basic instantiation and configuration of PHPivot
@@ -49,8 +50,8 @@ class BasicInstantiationTest extends TestCase
      */
     public function testConstructorThrowsExceptionForNonArray()
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Recordset must be an array');
+        $this->expectException(PHPivotException::class);
+        $this->expectExceptionMessage(__('error.invalid_recordset'));
         
         new PHPivot('not an array');
     }
@@ -188,8 +189,8 @@ class BasicInstantiationTest extends TestCase
      */
     public function testSetDecimalPrecisionThrowsExceptionForNegative()
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Decimal precision must be a non-negative integer');
+        $this->expectException(PHPivotException::class);
+        $this->expectExceptionMessage(__('error.invalid_precision'));
         
         $data = [['name' => 'John', 'amount' => 100.5]];
         PHPivot::create($data)->setDecimalPrecision(-1);

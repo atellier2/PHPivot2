@@ -19,7 +19,7 @@ final class ComparisonFilter implements FilterInterface
     private function validateParameters(): void
     {
         if (empty($this->column) || !is_string($this->column)) {
-            throw new \InvalidArgumentException('Filter column must be a non-empty string');
+            throw new PHPivotException(__('error.invalid_filter_column'));
         }
 
         $validCompares = [
@@ -27,7 +27,7 @@ final class ComparisonFilter implements FilterInterface
             PivotConstants::COMPARE_NOT_EQUAL
         ];
         if (!in_array($this->compare, $validCompares, true)) {
-            throw new \InvalidArgumentException('Invalid compare operator');
+            throw new PHPivotException(__('error.invalid_compare_operator'));
         }
 
         $validMatches = [
@@ -36,7 +36,7 @@ final class ComparisonFilter implements FilterInterface
             PivotConstants::FILTER_MATCH_NONE
         ];
         if (!in_array($this->match, $validMatches, true)) {
-            throw new \InvalidArgumentException('Invalid match mode');
+            throw new PHPivotException(__('error.invalid_match_mode'));
         }
     }
 
