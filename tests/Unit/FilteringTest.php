@@ -5,6 +5,7 @@ namespace Atellier2\PHPivot\Tests\Unit;
 use Atellier2\PHPivot\PHPivot;
 use PHPUnit\Framework\TestCase;
 use Atellier2\PHPivot\Config\PivotConstants;
+use Atellier2\PHPivot\Exception\PHPivotException;
 
 /**
  * Test filtering functionality
@@ -244,8 +245,9 @@ class FilteringTest extends TestCase
      */
     public function testFilterOnNonExistentColumnThrowsException()
     {
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('No such column');
+        $this->expectException(PHPivotException::class);
+        $this->expectExceptionCode(PHPivotException::INVALID_FILTER);
+        $this->expectExceptionMessage('No such column in data row to filter');
         
         PHPivot::create($this->testData)
             ->setPivotRowFields('name')

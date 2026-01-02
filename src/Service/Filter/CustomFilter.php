@@ -10,7 +10,11 @@ final class CustomFilter implements FilterInterface
     public function __construct(
         private readonly mixed $filterFn,
         private readonly mixed $extraParams = null
-    ) {}
+    ) {
+        if (!is_callable($this->filterFn)) {
+            throw new \InvalidArgumentException('Filter function must be callable');
+        }
+    }
 
     public function matches(array $row): bool
     {

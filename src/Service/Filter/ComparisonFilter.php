@@ -3,6 +3,7 @@
 namespace Atellier2\PHPivot\Service\Filter;
 
 use Atellier2\PHPivot\Config\PivotConstants;
+use Atellier2\PHPivot\Exception\PHPivotException;
 
 final class ComparisonFilter implements FilterInterface
 {
@@ -11,10 +12,41 @@ final class ComparisonFilter implements FilterInterface
         private readonly array|string $value,
         private readonly int $compare = PivotConstants::COMPARE_EQUAL,
         private readonly int $match = PivotConstants::FILTER_MATCH_ALL
-    ) {}
+    ) {
+        $this->validateParameters();
+    }
+
+    private function validateParameters(): void
+    {
+        if (empty($this->column) || !is_string($this->column)) {
+            throw new \InvalidArgumentException('Filter column must be a non-empty string');
+        }
+
+        $validCompares = [
+            PivotConstants::COMPARE_EQUAL,
+            PivotConstants::COMPARE_NOT_EQUAL
+        ];
+        if (!in_array($this->compare, $validCompares, true)) {
+            throw new \InvalidArgumentException('Invalid compare operator');
+        }
+
+        $validMatches = [
+            PivotConstants::FILTER_MATCH_ALL,
+            PivotConstants::FILTER_MATCH_ANY,
+            PivotConstants::FILTER_MATCH_NONE
+        ];
+        if (!in_array($this->match, $validMatches, true)) {
+            throw new \InvalidArgumentException('Invalid match mode');
+        }
+    }
+
 
     public function matches(array $row): bool
     {
+        if(!array_key_exists($this->column, $row)) {
+            throw new \Atellier2\PHPivot\Exception\PHPivotException("No such column in data row to filter",PHPivotException::INVALID_FILTER);
+        }
+
         $values = is_array($this->value) ? $this->value : [$this->value];
         $results = [];
 
